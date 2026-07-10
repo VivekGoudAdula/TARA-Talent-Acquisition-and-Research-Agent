@@ -80,7 +80,7 @@ class PersonalizeService:
 
         apply_url = self._settings.engagement_email_cta_url
         callback_url = f"http://localhost:8000/api/engagement/callback/trigger?phone={record.phone}&entity_id={record.entity_id}&entity_type={record.entity_type}"
-        ai_banker_url = f"{self._settings.voice_agent_base_url or 'http://localhost:9000'}/static/livekit_client.html"
+        ai_banker_url = f"tel:{self._settings.twilio_from_number}"
 
         callback_phone = self._format_callback_phone(self._settings.engagement_callback_phone)
 
@@ -116,7 +116,7 @@ class PersonalizeService:
             f"To proceed, select an option below:\n\n"
             f"1️⃣ *Apply Now:* {apply_url}\n"
             f"2️⃣ *Request Callback:* {callback_url}\n"
-            f"3️⃣ *Talk to AI Banker:* {ai_banker_url}"
+            f"3️⃣ *Connect With Bank:* {ai_banker_url}"
         )
 
         email_subject = f"{bank} — Pre-qualified {product} for {name}"
@@ -129,7 +129,7 @@ class PersonalizeService:
             f"Based on your {why_eligible_str}, you have been selected for this exclusive offer.\n\n"
             f"Apply now: {apply_url}\n"
             f"Request callback: {callback_url}\n"
-            f"Talk to AI Banker: {ai_banker_url}\n\n"
+            f"Connect With Bank: {ai_banker_url}\n\n"
             f"Regards,\n{bank} Relationship Team"
         )
 

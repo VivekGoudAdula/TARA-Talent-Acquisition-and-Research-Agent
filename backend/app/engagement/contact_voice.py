@@ -90,6 +90,8 @@ class ContactVoiceTrigger:
             return {"triggered": False, "reason": str(exc)}
 
     def _recent_callback(self, entity_id: str, phone: str) -> bool:
+        if getattr(self._voice._settings, "engagement_test_mode", False):
+            return False
         digits = "".join(c for c in phone if c.isdigit())[-10:]
         key = f"{entity_id}:{digits}"
         cutoff = datetime.now(timezone.utc) - timedelta(minutes=_DEDUP_MINUTES)

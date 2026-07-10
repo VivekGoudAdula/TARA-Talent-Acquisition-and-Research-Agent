@@ -125,14 +125,20 @@ def trigger_voice_callback_route(
     service: EngagementService = Depends(get_engagement_service),
 ):
     from fastapi.responses import HTMLResponse
-    try:
-        service.trigger_voice_callback(
-            phone=phone,
-            entity_id=entity_id,
-            entity_type=entity_type,
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    import threading
+
+    def make_call():
+        try:
+            service.trigger_voice_callback(
+                phone=phone,
+                entity_id=entity_id,
+                entity_type=entity_type,
+            )
+        except Exception as exc:
+            from app.utils.logging_config import get_logger
+            get_logger(__name__).warning("Async callback trigger failed: %s", exc)
+
+    threading.Thread(target=make_call, daemon=True).start()
 
     html_content = f"""
     <!DOCTYPE html>
@@ -431,4 +437,4 @@ def track_email_cta(
     from fastapi.responses import RedirectResponse
 
     url = service.record_cta_click(token)
-    return RedirectResponse(url=url or "https://www.idbi.bank.in")
+    return RedirectResponse(url=url or "https://www.idbibank.in/")

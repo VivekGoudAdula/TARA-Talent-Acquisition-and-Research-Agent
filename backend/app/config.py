@@ -98,7 +98,7 @@ class Settings(BaseSettings):
 
     engagement_bank_name: str = Field(default="IDBI Bank", alias="ENGAGEMENT_BANK_NAME")
     engagement_email_cta_url: str = Field(
-        default="https://www.idbi.bank.in",
+        default="https://www.idbi.bank.in/",
         alias="ENGAGEMENT_EMAIL_CTA_URL",
     )
     engagement_callback_url: str = Field(
