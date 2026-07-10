@@ -1,0 +1,10 @@
+{
+  "result": {
+    "profiles_processed": 100,
+    "reports_succeeded": 100,
+    "reports_failed": 0,
+    "reports_in_db": 100
+  },
+  "elapsed_seconds": 1335.7,
+  "reports_after": 100
+}

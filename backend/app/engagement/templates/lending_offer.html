@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${bank_name} — Premium Banking Offer</title>
+  <style>
+    body {
+      font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0b0f19;
+      margin: 0;
+      padding: 40px 20px;
+      color: #1f2937;
+    }
+    .wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 40px rgba(79, 70, 229, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, #0b3d91, #1d6fd8);
+      color: #ffffff;
+      padding: 35px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header p {
+      margin: 8px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .content {
+      padding: 35px;
+      line-height: 1.7;
+      background-color: #ffffff;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 12px;
+    }
+    .badge {
+      display: inline-block;
+      background: #e8f1ff;
+      color: #0b3d91;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .metrics {
+      display: flex;
+      gap: 15px;
+      margin: 25px 0;
+      flex-wrap: wrap;
+    }
+    .metric {
+      flex: 1;
+      min-width: 150px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .metric span {
+      display: block;
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .metric strong {
+      display: block;
+      font-size: 20px;
+      color: #0b3d91;
+      margin-top: 6px;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0b3d91;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 25px 0 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+    }
+    .reasons-list {
+      margin: 10px 0;
+      padding-left: 20px;
+      font-size: 14.5px;
+      color: #4b5563;
+    }
+    .reasons-list li {
+      margin-bottom: 6px;
+    }
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 15px 0;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .benefit-item::before {
+      content: '✓';
+      color: #10b981;
+      font-weight: bold;
+    }
+    .cta-container {
+      margin-top: 35px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0b3d91, #1d6fd8);
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px rgba(29, 111, 216, 0.3);
+    }
+    .btn-secondary {
+      background: #ffffff;
+      color: #0b3d91 !important;
+      border: 2px solid #0b3d91;
+    }
+    .btn-voice {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .footer {
+      padding: 25px 35px;
+      font-size: 12px;
+      color: #6b7280;
+      background-color: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      line-height: 1.6;
+    }
+    .footer-links {
+      margin-top: 12px;
+      display: flex;
+      gap: 15px;
+    }
+    .footer-links a {
+      color: #0b3d91;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>${bank_name}</h1>
+      <p>Exclusive Pre-Approved Relationship Offer</p>
+    </div>
+    <div class="content">
+      <div class="greeting">Dear ${customer_name},</div>
+      <p>We are pleased to present you with a pre-approved customized banking solution based on your banking profile:</p>
+      
+      <div>
+        <span class="badge">${product_name}</span>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <span>Eligible Amount</span>
+          <strong>${eligible_amount}</strong>
+        </div>
+        <div class="metric">
+          <span>Interest Rate</span>
+          <strong>${interest_rate}</strong>
+        </div>
+        <div class="metric">
+          <span>Valid Until</span>
+          <strong>${offer_valid_until}</strong>
+        </div>
+      </div>
+
+      <div class="section-title">Why you qualify</div>
+      <ul class="reasons-list">
+        <li>Qualifying credit features: ${reason_summary}</li>
+      </ul>
+      <p style="font-size: 14.5px; color: #4b5563; margin-top: 10px;">${insight}</p>
+
+      <div class="section-title">Key Offer Benefits</div>
+      <div class="benefits-grid">
+        <div class="benefit-item">Instant online execution</div>
+        <div class="benefit-item">Zero prepayment charges</div>
+        <div class="benefit-item">Paperless processing</div>
+        <div class="benefit-item">Flexible repayment choices</div>
+      </div>
+
+      <div class="cta-container">
+        <a class="btn btn-primary" href="${apply_url}">Apply Now</a>
+        <a class="btn btn-voice" href="${ai_banker_url}">⚡ Connect with AI Banker (Live Audio)</a>
+        <a class="btn btn-secondary" href="${callback_url}">Request Callback</a>
+      </div>
+    </div>
+    <div class="footer">
+      <strong>Security Warning:</strong> ${bank_name} will never ask for your card PIN, OTP, CVV, or passwords via phone, SMS, or email. Do not share sensitive details with anyone.
+      <br /><br />
+      For any queries, contact our support team at <strong>support@idbi.bank.in</strong> or call <strong>+91 1800-209-435</strong>.
+    </div>
+  </div>
+</body>
+</html>

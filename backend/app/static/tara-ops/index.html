@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tara CRM & Ops — IDBI Innovate 2026</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --accent:#38bdf8; --ok:#22c55e; --text:#e2e8f0; --muted:#94a3b8; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Segoe UI,system-ui,sans-serif; background:var(--bg); color:var(--text); }
+    header { padding:1rem 1.5rem; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
+    h1 { margin:0; font-size:1.2rem; }
+    nav button { background:#334155; color:var(--text); border:none; padding:.45rem .9rem; margin:.15rem; border-radius:6px; cursor:pointer; }
+    nav button.active { background:var(--accent); color:#0f172a; font-weight:600; }
+    main { padding:1rem 1.5rem; display:grid; grid-template-columns:1fr; gap:1rem; max-width:1400px; margin:0 auto; }
+    @media(min-width:900px){ main.crm-layout { grid-template-columns:320px 1fr; } }
+    .card { background:var(--card); border-radius:10px; padding:1rem; border:1px solid #334155; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.75rem; margin-bottom:1rem; }
+    .grid .card h3 { margin:0; font-size:.8rem; color:var(--muted); }
+    .grid .card .val { font-size:1.5rem; font-weight:700; }
+    table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    th,td { padding:.5rem; text-align:left; border-bottom:1px solid #334155; }
+    th { color:var(--muted); }
+    input,select,textarea { width:100%; padding:.45rem; border-radius:6px; border:1px solid #475569; background:#0f172a; color:var(--text); margin-bottom:.5rem; }
+    button.action { padding:.4rem .75rem; border-radius:6px; border:none; background:var(--accent); color:#0f172a; font-weight:600; cursor:pointer; margin:.15rem; }
+    .badge { padding:.1rem .45rem; border-radius:999px; font-size:.7rem; }
+    .pending{background:#422006;color:#fdba74}.in_progress{background:#1e3a5f;color:#7dd3fc}.converted,.completed{background:#14532d;color:#86efac}
+    .hidden{display:none}.overdue{color:#f87171}
+    pre { background:#0f172a; padding:.75rem; border-radius:8px; overflow:auto; font-size:.75rem; max-height:400px; }
+    .lead-row { padding:.5rem; border-bottom:1px solid #334155; cursor:pointer; }
+    .lead-row:hover,.lead-row.active { background:#334155; }
+    .section-title { font-size:.9rem; color:var(--accent); margin:1rem 0 .5rem; text-transform:uppercase; letter-spacing:.05em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tara CRM & Ops <span style="color:#64748b;font-weight:400">| IDBI Innovate 2026</span></h1>
+    <nav>
+      <button class="active" data-tab="crm">CRM 360</button>
+      <button data-tab="rm">RM Handoffs</button>
+      <button data-tab="learning">Learning</button>
+      <button data-tab="pipeline">Full Flow</button>
+    </nav>
+  </header>
+
+  <main id="main-crm" class="crm-layout">
+    <section class="card">
+      <h2 style="margin-top:0;font-size:1rem">Customer Search</h2>
+      <input id="crm-search" placeholder="Name, phone, lead ID..." />
+      <button class="action" onclick="searchCustomers()">Search</button>
+      <div id="crm-list" style="margin-top:.75rem;max-height:70vh;overflow:auto"></div>
+    </section>
+    <section class="card" id="crm-detail">
+      <p style="color:var(--muted)">Select a customer to view 360° profile, scoring, engagement, onboarding, activation.</p>
+    </section>
+  </main>
+
+  <main id="main-rm" class="hidden">
+    <div class="grid" id="rm-stats"></div>
+    <div class="card">
+      <h2 style="margin-top:0">Handoff Queue</h2>
+      <table><thead><tr><th>Customer</th><th>Product</th><th>Priority</th><th>Status</th><th>SLA</th><th>RM</th><th></th></tr></thead>
+      <tbody id="handoff-rows"></tbody></table>
+    </div>
+  </main>
+
+  <main id="main-learning" class="hidden">
+    <div class="grid" id="learn-stats"></div>
+    <pre id="learn-detail"></pre>
+    <button class="action" onclick="buildLabels()">Build Labels</button>
+    <button class="action" onclick="retrain()">Retrain + Refresh Scores</button>
+  </main>
+
+  <main id="main-pipeline" class="hidden">
+    <p>Runs complete architecture flow: L2–L3 scoring → L4 outreach + sequences → L6 learning → retrain → score refresh.</p>
+    <button class="action" onclick="runCompleteFlow()">Run Complete L1–L6 Flow</button>
+    <button class="action" onclick="runPipeline('external')">Scoring Only (External)</button>
+    <div class="card" style="margin-top:1rem"><pre id="pipeline-log"></pre></div>
+  </main>
+
+  <script>
+    const API = window.location.origin;
+    let selectedEntity = null;
+
+    document.querySelectorAll('nav button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        ['crm','rm','learning','pipeline'].forEach(t => {
+          document.getElementById('main-'+t).classList.toggle('hidden', btn.dataset.tab !== t);
+        });
+        if (btn.dataset.tab === 'rm') loadRmDesk();
+        if (btn.dataset.tab === 'learning') loadLearning();
+        if (btn.dataset.tab === 'pipeline') loadPipelineRuns();
+      };
+    });
+
+    async function searchCustomers() {
+      const q = document.getElementById('crm-search').value;
+      const rows = await fetch(API+`/api/ops/crm/customers?q=${encodeURIComponent(q)}`).then(r=>r.json());
+      document.getElementById('crm-list').innerHTML = rows.map(r =>
+        `<div class="lead-row" onclick="loadCustomer('${r.entity_id}')">
+          <strong>${r.name||'—'}</strong><br><small>${r.phone||''}</small>
+          <br><small>Conv: ${r.conversion_probability??'—'}% | ${r.journey_status||'no journey'}</small>
+        </div>`).join('') || '<p>No customers found</p>';
+    }
+
+    async function loadCustomer(entityId) {
+      selectedEntity = entityId;
+      document.querySelectorAll('.lead-row').forEach(el => el.classList.remove('active'));
+      const detail = await fetch(API+`/api/ops/crm/customers/${entityId}`).then(r=>r.json());
+      if (!detail.found) {
+        document.getElementById('crm-detail').innerHTML = '<p>Customer not found</p>';
+        return;
+      }
+      const l = detail.lead || {};
+      const j = detail.onboarding?.journey || {};
+      const act = detail.onboarding?.activation;
+      document.getElementById('crm-detail').innerHTML = `
+        <h2 style="margin-top:0">${l.full_name||'Customer'}</h2>
+        <p>${l.phone_number||''} · ${l.email||''} · Lead ${detail.entity_id}</p>
+        <div class="grid">
+          <div class="card"><h3>Conversion</h3><div class="val">${detail.scoring?.conversion?.conversion_probability??'—'}%</div></div>
+          <div class="card"><h3>Product</h3><div class="val" style="font-size:.9rem">${detail.scoring?.product?.top_recommendation||detail.engagement_record?.recommended_product||'—'}</div></div>
+          <div class="card"><h3>Journey</h3><div class="val" style="font-size:.9rem">${j.status||'—'}</div></div>
+          <div class="card"><h3>KYC</h3><div class="val" style="font-size:.9rem">${j.kyc_readiness||'—'}</div></div>
+        </div>
+        <div class="section-title">Onboarding & Activation</div>
+        <p>Responses: ${detail.onboarding?.responses?.length||0} · Handoffs: ${detail.onboarding?.handoffs?.length||0} · KYC docs: ${detail.onboarding?.kyc_documents?.length||0}</p>
+        ${act ? `<p>YONO/UPI: <span class="badge in_progress">${act.status}</span> · <a href="${act.deep_link}" style="color:var(--accent)">${act.deep_link}</a></p>` : '<p>No activation journey yet</p>'}
+        <div class="section-title">Engagement</div>
+        <p>Events: ${detail.engagement?.events?.length||0} · Sequences: ${detail.engagement?.sequences?.length||0}</p>
+        <div class="section-title">Explainability</div>
+        <pre>${JSON.stringify(detail.explainability?.llm_summary || detail.explainability?.reason_codes || 'No report', null, 2)}</pre>
+        <button class="action" onclick="assignFromCrm()">Create RM Handoff Note</button>
+      `;
+    }
+
+    async function loadRmDesk() {
+      const dash = await fetch(API+'/api/ops/dashboard').then(r=>r.json());
+      document.getElementById('rm-stats').innerHTML = [
+        ['Pending',dash.pending],['In Progress',dash.in_progress],['Completed',dash.completed],['SLA Overdue',dash.overdue_sla]
+      ].map(([k,v])=>`<div class="card"><h3>${k}</h3><div class="val">${v}</div></div>`).join('');
+      const rms = await fetch(API+'/api/ops/rms').then(r=>r.json());
+      const rows = await fetch(API+'/api/ops/handoffs?limit=50').then(r=>r.json());
+      document.getElementById('handoff-rows').innerHTML = rows.map(h => {
+        const sla = h.sla_breached ? '<span class="overdue">BREACHED</span>' : 'OK';
+        const opts = rms.map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+        return `<tr><td><strong>${h.customer_name}</strong><br><small>${h.phone}</small></td><td>${h.product||'—'}</td>
+          <td>${h.priority}</td><td><span class="badge ${h.status}">${h.status}</span></td><td>${sla}</td>
+          <td><select id="rm-${h.handoff_id}">${opts}</select></td>
+          <td><button class="action" onclick="assign('${h.handoff_id}')">Assign</button>
+          <button class="action" onclick="convert('${h.handoff_id}')">Converted</button></td></tr>`;
+      }).join('') || '<tr><td colspan="7">No handoffs</td></tr>';
+    }
+    async function assign(id){ await fetch(API+`/api/ops/handoffs/${id}/assign`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rm_name:document.getElementById('rm-'+id).value})}); loadRmDesk(); }
+    async function convert(id){ await fetch(API+`/api/ops/handoffs/${id}/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'converted',notes:'CRM conversion'})}); loadRmDesk(); if(selectedEntity) loadCustomer(selectedEntity); }
+
+    async function loadLearning(){
+      const s = await fetch(API+'/api/learning/performance/summary?capture_snapshot=true').then(r=>r.json());
+      const f=s.funnel;
+      document.getElementById('learn-stats').innerHTML=[['Responses',f.total_responses],['Interested',f.interested],['Handoffs',f.handoffs_created],['Labels',s.outcome_labels_count]].map(([k,v])=>`<div class="card"><h3>${k}</h3><div class="val">${v}</div></div>`).join('');
+      document.getElementById('learn-detail').textContent=JSON.stringify(s,null,2);
+    }
+    async function buildLabels(){ await fetch(API+'/api/learning/feedback/build-labels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({limit:5000,persist:true})}); loadLearning(); }
+    async function retrain(){ const r=await fetch(API+'/api/learning/retrain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({label_source:'blended',min_outcome_labels:1,refresh_scores:true})}).then(r=>r.json()); alert(r.message); loadLearning(); }
+
+    async function runCompleteFlow(){
+      document.getElementById('pipeline-log').textContent='Running complete L1–L6 flow...';
+      const r=await fetch(API+'/api/pipeline/run/complete-flow?outreach_limit=5&outreach_dry_run=true&auto_retrain=true',{method:'POST'}).then(r=>r.json());
+      document.getElementById('pipeline-log').textContent=JSON.stringify(r,null,2);
+    }
+    async function runPipeline(t){ const url=t==='full'?'/api/pipeline/run/full':'/api/pipeline/run/external'; const r=await fetch(API+url,{method:'POST'}).then(r=>r.json()); document.getElementById('pipeline-log').textContent=JSON.stringify(r,null,2); }
+    async function loadPipelineRuns(){ const runs=await fetch(API+'/api/pipeline/runs?limit=3').then(r=>r.json()); document.getElementById('pipeline-log').textContent=JSON.stringify(runs,null,2); }
+
+    searchCustomers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1162 @@
+{
+  "generated_at": "2026-07-09T09:33:35.351902+00:00",
+  "overall_health": "73.5%",
+  "system_health": {
+    "database": "FAIL",
+    "internal": "FAIL",
+    "external": "FAIL",
+    "customer360": "FAIL",
+    "feature_store": "FAIL",
+    "behaviour_analytics": "FAIL",
+    "ml": "FAIL",
+    "repayment_model": "PASS",
+    "product_recommendation": "PASS",
+    "lead_conversion": "PASS",
+    "api": "PASS",
+    "data_integrity": "FAIL",
+    "end_to_end_workflow": "FAIL",
+    "overall_health": "73.5%"
+  },
+  "categories": [
+    {
+      "category": "API",
+      "status": "PASS",
+      "passed": 32,
+      "failed": 0,
+      "warned": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "API",
+          "name": "Health",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Internal pipeline status",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Customer360 GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Transaction Analytics GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Behaviour Analytics GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Relationship Analytics GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Digital Channel Analytics GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Customer Health GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Behaviour Summary GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "External leads list",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "ML dataset GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "ML dataset stats",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Repayment model info",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Conversion model info",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Product catalog",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "External profile GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "External analytics GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "External intelligence GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Repayment predict (Internal)",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Product recommend (Internal)",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Product recommend (External)",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Conversion predict",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Explainability GET",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: Customer360 build",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: Financial analytics",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: External import",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: External enrichment",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: ML dataset build",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: Repayment train",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: Conversion train",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: Internal pipeline build-all",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        },
+        {
+          "category": "API",
+          "name": "Route registered: Explainability generate",
+          "status": "PASS",
+          "reason": "POST endpoint present in OpenAPI",
+          "details": {}
+        }
+      ]
+    },
+    {
+      "category": "Business Validation",
+      "status": "PASS",
+      "passed": 4,
+      "failed": 0,
+      "warned": 0,
+      "skipped": 1,
+      "checks": [
+        {
+          "category": "Business Validation",
+          "name": "Repayment prediction (Internal)",
+          "status": "PASS",
+          "reason": "capacity=Medium, confidence=0.415",
+          "details": {}
+        },
+        {
+          "category": "Business Validation",
+          "name": "Repayment prediction (External)",
+          "status": "SKIP",
+          "reason": "No training dataset profile available",
+          "details": {}
+        },
+        {
+          "category": "Business Validation",
+          "name": "Product recommendation (Internal)",
+          "status": "PASS",
+          "reason": "product=Education Loan, probability=22.0, eligible=False",
+          "details": {}
+        },
+        {
+          "category": "Business Validation",
+          "name": "Product recommendation (External)",
+          "status": "PASS",
+          "reason": "product=Education Loan, probability=26.7, eligible=False",
+          "details": {}
+        },
+        {
+          "category": "Business Validation",
+          "name": "Conversion prediction",
+          "status": "PASS",
+          "reason": "conversion_probability=36.89",
+          "details": {}
+        }
+      ]
+    },
+    {
+      "category": "Data Integrity",
+      "status": "FAIL",
+      "passed": 5,
+      "failed": 7,
+      "warned": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "Data Integrity",
+          "name": "Negative account balances",
+          "status": "PASS",
+          "reason": "negative_balances=0",
+          "details": {
+            "negative_balances": 0
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Impossible customer ages",
+          "status": "FAIL",
+          "reason": "invalid_ages=1000",
+          "details": {
+            "invalid_ages": 1000
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Duplicate customer phone numbers",
+          "status": "FAIL",
+          "reason": "duplicate_phones=1000",
+          "details": {
+            "duplicate_phones": 1000
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Duplicate external lead phone numbers",
+          "status": "FAIL",
+          "reason": "duplicate_lead_phones=1000",
+          "details": {
+            "duplicate_lead_phones": 1000
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Invalid customer income (<= 0)",
+          "status": "FAIL",
+          "reason": "invalid_income=1000",
+          "details": {
+            "invalid_income": 1000
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Invalid EMI burden (> 100%)",
+          "status": "FAIL",
+          "reason": "invalid_emi=95",
+          "details": {
+            "invalid_emi": 95
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Invalid debt ratio (> 100%)",
+          "status": "FAIL",
+          "reason": "invalid_debt_ratio=95",
+          "details": {
+            "invalid_debt_ratio": 95
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Duplicate Customer360 per customer",
+          "status": "FAIL",
+          "reason": "duplicate_customer360=95",
+          "details": {
+            "duplicate_customer360": 95
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Duplicate external profile per lead",
+          "status": "PASS",
+          "reason": "duplicate_external_profile=0",
+          "details": {
+            "duplicate_external_profile": 0
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Training dataset duplicate profile rows",
+          "status": "PASS",
+          "reason": "duplicate_training_rows=0",
+          "details": {
+            "duplicate_training_rows": 0
+          }
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Missing customer names",
+          "status": "PASS",
+          "reason": "null_full_name=0",
+          "details": {}
+        },
+        {
+          "category": "Data Integrity",
+          "name": "Missing training target variable",
+          "status": "PASS",
+          "reason": "null_target_repayment_capacity=0",
+          "details": {}
+        }
+      ]
+    },
+    {
+      "category": "Database",
+      "status": "FAIL",
+      "passed": 33,
+      "failed": 4,
+      "warned": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "Database",
+          "name": "Table structure: customers",
+          "status": "PASS",
+          "reason": "PK=['customer_id'], indexes=2, constraints=2, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "customer_id"
+            ],
+            "index_count": 2,
+            "constraint_count": 2,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: accounts",
+          "status": "PASS",
+          "reason": "PK=['account_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "account_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: transactions",
+          "status": "PASS",
+          "reason": "PK=['transaction_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "transaction_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: products",
+          "status": "PASS",
+          "reason": "PK=['product_id'], indexes=2, constraints=2, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "product_id"
+            ],
+            "index_count": 2,
+            "constraint_count": 2,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: customer_products",
+          "status": "PASS",
+          "reason": "PK=['customer_product_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "customer_product_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: consent",
+          "status": "PASS",
+          "reason": "PK=['consent_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "consent_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: customer_360_profile",
+          "status": "PASS",
+          "reason": "PK=['profile_id'], indexes=1, constraints=1, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "profile_id"
+            ],
+            "index_count": 1,
+            "constraint_count": 1,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: feature_store",
+          "status": "PASS",
+          "reason": "PK=['feature_id'], indexes=2, constraints=2, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "feature_id"
+            ],
+            "index_count": 2,
+            "constraint_count": 2,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: external_leads",
+          "status": "PASS",
+          "reason": "PK=['lead_id'], indexes=1, constraints=1, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "lead_id"
+            ],
+            "index_count": 1,
+            "constraint_count": 1,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: external_customer_profile",
+          "status": "PASS",
+          "reason": "PK=['profile_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "profile_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: lead_feature_store",
+          "status": "PASS",
+          "reason": "PK=['feature_id'], indexes=2, constraints=2, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "feature_id"
+            ],
+            "index_count": 2,
+            "constraint_count": 2,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: training_dataset",
+          "status": "PASS",
+          "reason": "PK=['record_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "record_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Table structure: explainability_reports",
+          "status": "PASS",
+          "reason": "PK=['report_id'], indexes=3, constraints=3, duplicate_pk_groups=0",
+          "details": {
+            "primary_key": [
+              "report_id"
+            ],
+            "index_count": 3,
+            "constraint_count": 3,
+            "duplicate_pk_groups": 0
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: customers",
+          "status": "PASS",
+          "reason": "count=1000, expected=1000",
+          "details": {
+            "actual": 1000,
+            "expected": 1000,
+            "operator": "eq"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: accounts",
+          "status": "PASS",
+          "reason": "count=1000, expected>=1000",
+          "details": {
+            "actual": 1000,
+            "expected": 1000,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: transactions",
+          "status": "PASS",
+          "reason": "count=27999, expected>=10000",
+          "details": {
+            "actual": 27999,
+            "expected": 10000,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: products",
+          "status": "PASS",
+          "reason": "count=10, expected>=1",
+          "details": {
+            "actual": 10,
+            "expected": 1,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: customer_products",
+          "status": "PASS",
+          "reason": "count=1823, expected>=1",
+          "details": {
+            "actual": 1823,
+            "expected": 1,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: consent",
+          "status": "PASS",
+          "reason": "count=1000, expected>=1000",
+          "details": {
+            "actual": 1000,
+            "expected": 1000,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: customer_360_profile",
+          "status": "FAIL",
+          "reason": "count=95, expected=1000",
+          "details": {
+            "actual": 95,
+            "expected": 1000,
+            "operator": "eq"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: feature_store",
+          "status": "FAIL",
+          "reason": "count=95, expected=1000",
+          "details": {
+            "actual": 95,
+            "expected": 1000,
+            "operator": "eq"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: external_leads",
+          "status": "PASS",
+          "reason": "count=1000, expected=1000",
+          "details": {
+            "actual": 1000,
+            "expected": 1000,
+            "operator": "eq"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: external_customer_profile",
+          "status": "FAIL",
+          "reason": "count=458, expected=1000",
+          "details": {
+            "actual": 458,
+            "expected": 1000,
+            "operator": "eq"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: lead_feature_store",
+          "status": "FAIL",
+          "reason": "count=2, expected=1000",
+          "details": {
+            "actual": 2,
+            "expected": 1000,
+            "operator": "eq"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: training_dataset",
+          "status": "PASS",
+          "reason": "count=20, expected>=1",
+          "details": {
+            "actual": 20,
+            "expected": 1,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Record count: explainability_reports",
+          "status": "PASS",
+          "reason": "count=50, expected>=0",
+          "details": {
+            "actual": 50,
+            "expected": 0,
+            "operator": "gte"
+          }
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan accounts (no customer)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan transactions (no account)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan customer_products (no customer)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan customer_products (no product)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan consent (no customer)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan Customer360 profiles (no customer)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan feature_store rows (no customer)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan external profiles (no lead)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Referential integrity: Orphan lead_feature_store rows (no lead)",
+          "status": "PASS",
+          "reason": "orphan_rows=0",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Behaviour summary (internal feature_store)",
+          "status": "PASS",
+          "reason": "customers_with_behaviour_summary=95",
+          "details": {}
+        },
+        {
+          "category": "Database",
+          "name": "Behaviour summary (lead_feature_store)",
+          "status": "PASS",
+          "reason": "leads_with_behaviour_summary=2",
+          "details": {}
+        }
+      ]
+    },
+    {
+      "category": "Database Consistency",
+      "status": "FAIL",
+      "passed": 1,
+      "failed": 3,
+      "warned": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "Database Consistency",
+          "name": "Every Customer360 has Feature Store",
+          "status": "FAIL",
+          "reason": "profiles_without_features=95",
+          "details": {}
+        },
+        {
+          "category": "Database Consistency",
+          "name": "Every External Profile has Lead Feature Store",
+          "status": "FAIL",
+          "reason": "profiles_without_lead_features=456",
+          "details": {}
+        },
+        {
+          "category": "Database Consistency",
+          "name": "Training dataset references valid profiles",
+          "status": "FAIL",
+          "reason": "orphan_internal=20, orphan_external=0",
+          "details": {}
+        },
+        {
+          "category": "Database Consistency",
+          "name": "Product catalog references valid products",
+          "status": "PASS",
+          "reason": "catalog_products=5",
+          "details": {
+            "products": [
+              "Auto Loan",
+              "Education Loan",
+              "Home Loan",
+              "Mortgage Loan",
+              "Personal Loan"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "category": "End to End Workflow",
+      "status": "FAIL",
+      "passed": 0,
+      "failed": 2,
+      "warned": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "End to End Workflow",
+          "name": "Internal customer end-to-end workflow",
+          "status": "FAIL",
+          "reason": "stages_ok=['Customer360', 'Feature Store', 'Training Dataset', 'Repayment Prediction', 'Product Recommendation'], failed=['Repayment Prediction']",
+          "details": {
+            "Customer360": true,
+            "Feature Store": true,
+            "Training Dataset": true,
+            "Repayment Prediction": false,
+            "Product Recommendation": true
+          }
+        },
+        {
+          "category": "End to End Workflow",
+          "name": "External lead end-to-end workflow",
+          "status": "FAIL",
+          "reason": "stages_ok=['Import', 'Enrichment', 'Lead Analytics', 'Lead Feature Store', 'Training Dataset', 'Lead Conversion'], failed=['Enrichment', 'Lead Analytics', 'Lead Feature Store', 'Training Dataset']",
+          "details": {
+            "Import": true,
+            "Enrichment": false,
+            "Lead Analytics": false,
+            "Lead Feature Store": false,
+            "Training Dataset": false,
+            "Lead Conversion": true
+          }
+        }
+      ]
+    },
+    {
+      "category": "External Intelligence",
+      "status": "FAIL",
+      "passed": 0,
+      "failed": 5,
+      "warned": 2,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "External Intelligence",
+          "name": "Lead enrichment coverage",
+          "status": "FAIL",
+          "reason": "profiles=458, leads=1000",
+          "details": {}
+        },
+        {
+          "category": "External Intelligence",
+          "name": "Lead Analytics coverage",
+          "status": "FAIL",
+          "reason": "leads_with_stage=2/1000",
+          "details": {
+            "source_module": "external_lead_analytics"
+          }
+        },
+        {
+          "category": "External Intelligence",
+          "name": "Lead Intelligence coverage",
+          "status": "FAIL",
+          "reason": "leads_with_stage=2/1000",
+          "details": {
+            "source_module": "external_lead_intelligence"
+          }
+        },
+        {
+          "category": "External Intelligence",
+          "name": "Behaviour Summary coverage",
+          "status": "FAIL",
+          "reason": "leads_with_stage=2/1000",
+          "details": {
+            "source_module": "behaviour_summary"
+          }
+        },
+        {
+          "category": "External Intelligence",
+          "name": "Lead status ANALYTICS_READY",
+          "status": "WARN",
+          "reason": "analytics_ready=0/1000",
+          "details": {}
+        },
+        {
+          "category": "External Intelligence",
+          "name": "Lead status INTELLIGENCE_VALIDATED",
+          "status": "WARN",
+          "reason": "intelligence_validated=2/1000",
+          "details": {}
+        },
+        {
+          "category": "External Intelligence",
+          "name": "Lead Feature Store coverage",
+          "status": "FAIL",
+          "reason": "leads_in_feature_store=2/1000",
+          "details": {}
+        }
+      ]
+    },
+    {
+      "category": "Internal Intelligence",
+      "status": "FAIL",
+      "passed": 0,
+      "failed": 9,
+      "warned": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "Internal Intelligence",
+          "name": "Customer360 coverage",
+          "status": "FAIL",
+          "reason": "profiles=95, customers=1000",
+          "details": {}
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Financial Analytics coverage",
+          "status": "FAIL",
+          "reason": "profiles_with_financial_kpis=95/1000",
+          "details": {}
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Transaction Analytics coverage",
+          "status": "FAIL",
+          "reason": "customers_with_stage=95/1000",
+          "details": {
+            "source_module": "transaction_analytics"
+          }
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Behaviour Analytics coverage",
+          "status": "FAIL",
+          "reason": "customers_with_stage=95/1000",
+          "details": {
+            "source_module": "behaviour_analytics"
+          }
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Relationship Analytics coverage",
+          "status": "FAIL",
+          "reason": "customers_with_stage=95/1000",
+          "details": {
+            "source_module": "relationship_analytics"
+          }
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Digital & Channel Analytics coverage",
+          "status": "FAIL",
+          "reason": "customers_with_stage=95/1000",
+          "details": {
+            "source_module": "digital_channel_analytics"
+          }
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Customer Health Analytics coverage",
+          "status": "FAIL",
+          "reason": "customers_with_stage=95/1000",
+          "details": {
+            "source_module": "customer_health_analytics"
+          }
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Feature Store coverage",
+          "status": "FAIL",
+          "reason": "customers_with_stage=95/1000",
+          "details": {
+            "source_module": "internal_pipeline"
+          }
+        },
+        {
+          "category": "Internal Intelligence",
+          "name": "Pipeline completion markers",
+          "status": "FAIL",
+          "reason": "pipeline_completed=91/1000",
+          "details": {}
+        }
+      ]
+    },
+    {
+      "category": "Machine Learning",
+      "status": "FAIL",
+      "passed": 11,
+      "failed": 1,
+      "warned": 1,
+      "skipped": 0,
+      "checks": [
+        {
+          "category": "Machine Learning",
+          "name": "Training dataset populated",
+          "status": "PASS",
+          "reason": "records=20 (internal=20, external=0)",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Training dataset has internal and external records",
+          "status": "FAIL",
+          "reason": "internal=20, external=0",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Training dataset target variable valid",
+          "status": "PASS",
+          "reason": "invalid_targets=0",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Training dataset no duplicate rows",
+          "status": "PASS",
+          "reason": "duplicate_profile_groups=0",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Training dataset feature completeness",
+          "status": "WARN",
+          "reason": "rows_missing_all_core_scores=20",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Repayment Capacity Model file exists",
+          "status": "PASS",
+          "reason": "C:\\Users\\krish\\OneDrive\\Desktop\\Tara\\backend\\app\\ml\\models\\best_repayment_model.pkl",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Repayment Capacity Model metrics valid JSON",
+          "status": "PASS",
+          "reason": "keys=7",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Repayment Capacity Model feature importance valid JSON",
+          "status": "PASS",
+          "reason": "keys=15",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Lead Conversion Model file exists",
+          "status": "PASS",
+          "reason": "C:\\Users\\krish\\OneDrive\\Desktop\\Tara\\backend\\app\\ml\\models\\best_conversion_model.pkl",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Lead Conversion Model metrics valid JSON",
+          "status": "PASS",
+          "reason": "keys=7",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Lead Conversion Model feature importance valid JSON",
+          "status": "PASS",
+          "reason": "keys=37",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Product Recommendation catalog module",
+          "status": "PASS",
+          "reason": "C:\\Users\\krish\\OneDrive\\Desktop\\Tara\\backend\\app\\ml\\product_recommendation\\catalog.py",
+          "details": {}
+        },
+        {
+          "category": "Machine Learning",
+          "name": "Product Recommendation engine type",
+          "status": "PASS",
+          "reason": "Rule-based hybrid engine (no pickle artifact required)",
+          "details": {}
+        }
+      ]
+    }
+  ],
+  "total_checks": 121
+}

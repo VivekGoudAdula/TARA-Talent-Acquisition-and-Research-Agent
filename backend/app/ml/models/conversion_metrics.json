@@ -1,0 +1,23 @@
+{
+  "best_model": "xgboost",
+  "trained_at": "2026-07-10T02:47:46.208252+00:00",
+  "cv_scores": {
+    "random_forest": 0.7311053749999976,
+    "xgboost": 0.7107211166381837,
+    "lightgbm": 0.8209358180279805
+  },
+  "test_metrics": {
+    "mae": 0.5075017593383788,
+    "rmse": 1.0760707149610083,
+    "r2": 0.9943044177708927,
+    "best_model": "xgboost",
+    "cv_mae": {
+      "random_forest": 0.7311053749999976,
+      "xgboost": 0.7107211166381837,
+      "lightgbm": 0.8209358180279805
+    }
+  },
+  "records_used": 500,
+  "train_size": 400,
+  "test_size": 100
+}

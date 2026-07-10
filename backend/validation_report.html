@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tara Platform Validation Report</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 2rem; color: #1a1a1a; }
+    h1 { color: #0b3d6b; }
+    .overall { font-size: 1.4rem; font-weight: bold; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #ddd; padding: 0.6rem; text-align: left; }
+    th { background: #f4f7fb; }
+    .pass, .PASS { color: #0a7a2f; font-weight: bold; }
+    .fail, .FAIL { color: #b00020; font-weight: bold; }
+    .warn, .WARN { color: #9a6b00; font-weight: bold; }
+    .skip, .SKIP { color: #666; }
+    section { margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>Tara Platform Validation Report</h1>
+  <p>Generated: 2026-07-09T09:33:35.351902+00:00</p>
+  <p class="overall">Overall Health: 73.5%</p>
+  <h2>System Health</h2>
+  <table>
+    <thead><tr><th>Component</th><th>Status</th></tr></thead>
+    <tbody><tr><td>Database</td><td class='fail'>FAIL</td></tr><tr><td>Internal</td><td class='fail'>FAIL</td></tr><tr><td>External</td><td class='fail'>FAIL</td></tr><tr><td>Customer360</td><td class='fail'>FAIL</td></tr><tr><td>Feature Store</td><td class='fail'>FAIL</td></tr><tr><td>Behaviour Analytics</td><td class='fail'>FAIL</td></tr><tr><td>Ml</td><td class='fail'>FAIL</td></tr><tr><td>Repayment Model</td><td class='pass'>PASS</td></tr><tr><td>Product Recommendation</td><td class='pass'>PASS</td></tr><tr><td>Lead Conversion</td><td class='pass'>PASS</td></tr><tr><td>Api</td><td class='pass'>PASS</td></tr><tr><td>Data Integrity</td><td class='fail'>FAIL</td></tr><tr><td>End To End Workflow</td><td class='fail'>FAIL</td></tr><tr><td>Overall Health</td><td class='73.5%'>73.5%</td></tr></tbody>
+  </table>
+  
+                <section>
+                  <h2>API <span class="pass">PASS</span></h2>
+                  <p>Passed: 32 | Failed: 0 | Warnings: 0 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Health</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Internal pipeline status</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Customer360 GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Transaction Analytics GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Behaviour Analytics GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Relationship Analytics GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Digital Channel Analytics GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Customer Health GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Behaviour Summary GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>External leads list</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>ML dataset GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>ML dataset stats</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Repayment model info</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Conversion model info</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Product catalog</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>External profile GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>External analytics GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>External intelligence GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Repayment predict (Internal)</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Product recommend (Internal)</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Product recommend (External)</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Conversion predict</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Explainability GET</td><td class='pass'>PASS</td><td>HTTP 200</td></tr><tr><td>Route registered: Customer360 build</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: Financial analytics</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: External import</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: External enrichment</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: ML dataset build</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: Repayment train</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: Conversion train</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: Internal pipeline build-all</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr><tr><td>Route registered: Explainability generate</td><td class='pass'>PASS</td><td>POST endpoint present in OpenAPI</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>Business Validation <span class="pass">PASS</span></h2>
+                  <p>Passed: 4 | Failed: 0 | Warnings: 0 | Skipped: 1</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Repayment prediction (Internal)</td><td class='pass'>PASS</td><td>capacity=Medium, confidence=0.415</td></tr><tr><td>Repayment prediction (External)</td><td class='skip'>SKIP</td><td>No training dataset profile available</td></tr><tr><td>Product recommendation (Internal)</td><td class='pass'>PASS</td><td>product=Education Loan, probability=22.0, eligible=False</td></tr><tr><td>Product recommendation (External)</td><td class='pass'>PASS</td><td>product=Education Loan, probability=26.7, eligible=False</td></tr><tr><td>Conversion prediction</td><td class='pass'>PASS</td><td>conversion_probability=36.89</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>Data Integrity <span class="fail">FAIL</span></h2>
+                  <p>Passed: 5 | Failed: 7 | Warnings: 0 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Negative account balances</td><td class='pass'>PASS</td><td>negative_balances=0</td></tr><tr><td>Impossible customer ages</td><td class='fail'>FAIL</td><td>invalid_ages=1000</td></tr><tr><td>Duplicate customer phone numbers</td><td class='fail'>FAIL</td><td>duplicate_phones=1000</td></tr><tr><td>Duplicate external lead phone numbers</td><td class='fail'>FAIL</td><td>duplicate_lead_phones=1000</td></tr><tr><td>Invalid customer income (&lt;= 0)</td><td class='fail'>FAIL</td><td>invalid_income=1000</td></tr><tr><td>Invalid EMI burden (&gt; 100%)</td><td class='fail'>FAIL</td><td>invalid_emi=95</td></tr><tr><td>Invalid debt ratio (&gt; 100%)</td><td class='fail'>FAIL</td><td>invalid_debt_ratio=95</td></tr><tr><td>Duplicate Customer360 per customer</td><td class='fail'>FAIL</td><td>duplicate_customer360=95</td></tr><tr><td>Duplicate external profile per lead</td><td class='pass'>PASS</td><td>duplicate_external_profile=0</td></tr><tr><td>Training dataset duplicate profile rows</td><td class='pass'>PASS</td><td>duplicate_training_rows=0</td></tr><tr><td>Missing customer names</td><td class='pass'>PASS</td><td>null_full_name=0</td></tr><tr><td>Missing training target variable</td><td class='pass'>PASS</td><td>null_target_repayment_capacity=0</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>Database <span class="fail">FAIL</span></h2>
+                  <p>Passed: 33 | Failed: 4 | Warnings: 0 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Table structure: customers</td><td class='pass'>PASS</td><td>PK=[&#x27;customer_id&#x27;], indexes=2, constraints=2, duplicate_pk_groups=0</td></tr><tr><td>Table structure: accounts</td><td class='pass'>PASS</td><td>PK=[&#x27;account_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Table structure: transactions</td><td class='pass'>PASS</td><td>PK=[&#x27;transaction_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Table structure: products</td><td class='pass'>PASS</td><td>PK=[&#x27;product_id&#x27;], indexes=2, constraints=2, duplicate_pk_groups=0</td></tr><tr><td>Table structure: customer_products</td><td class='pass'>PASS</td><td>PK=[&#x27;customer_product_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Table structure: consent</td><td class='pass'>PASS</td><td>PK=[&#x27;consent_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Table structure: customer_360_profile</td><td class='pass'>PASS</td><td>PK=[&#x27;profile_id&#x27;], indexes=1, constraints=1, duplicate_pk_groups=0</td></tr><tr><td>Table structure: feature_store</td><td class='pass'>PASS</td><td>PK=[&#x27;feature_id&#x27;], indexes=2, constraints=2, duplicate_pk_groups=0</td></tr><tr><td>Table structure: external_leads</td><td class='pass'>PASS</td><td>PK=[&#x27;lead_id&#x27;], indexes=1, constraints=1, duplicate_pk_groups=0</td></tr><tr><td>Table structure: external_customer_profile</td><td class='pass'>PASS</td><td>PK=[&#x27;profile_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Table structure: lead_feature_store</td><td class='pass'>PASS</td><td>PK=[&#x27;feature_id&#x27;], indexes=2, constraints=2, duplicate_pk_groups=0</td></tr><tr><td>Table structure: training_dataset</td><td class='pass'>PASS</td><td>PK=[&#x27;record_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Table structure: explainability_reports</td><td class='pass'>PASS</td><td>PK=[&#x27;report_id&#x27;], indexes=3, constraints=3, duplicate_pk_groups=0</td></tr><tr><td>Record count: customers</td><td class='pass'>PASS</td><td>count=1000, expected=1000</td></tr><tr><td>Record count: accounts</td><td class='pass'>PASS</td><td>count=1000, expected&gt;=1000</td></tr><tr><td>Record count: transactions</td><td class='pass'>PASS</td><td>count=27999, expected&gt;=10000</td></tr><tr><td>Record count: products</td><td class='pass'>PASS</td><td>count=10, expected&gt;=1</td></tr><tr><td>Record count: customer_products</td><td class='pass'>PASS</td><td>count=1823, expected&gt;=1</td></tr><tr><td>Record count: consent</td><td class='pass'>PASS</td><td>count=1000, expected&gt;=1000</td></tr><tr><td>Record count: customer_360_profile</td><td class='fail'>FAIL</td><td>count=95, expected=1000</td></tr><tr><td>Record count: feature_store</td><td class='fail'>FAIL</td><td>count=95, expected=1000</td></tr><tr><td>Record count: external_leads</td><td class='pass'>PASS</td><td>count=1000, expected=1000</td></tr><tr><td>Record count: external_customer_profile</td><td class='fail'>FAIL</td><td>count=458, expected=1000</td></tr><tr><td>Record count: lead_feature_store</td><td class='fail'>FAIL</td><td>count=2, expected=1000</td></tr><tr><td>Record count: training_dataset</td><td class='pass'>PASS</td><td>count=20, expected&gt;=1</td></tr><tr><td>Record count: explainability_reports</td><td class='pass'>PASS</td><td>count=50, expected&gt;=0</td></tr><tr><td>Referential integrity: Orphan accounts (no customer)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan transactions (no account)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan customer_products (no customer)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan customer_products (no product)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan consent (no customer)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan Customer360 profiles (no customer)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan feature_store rows (no customer)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan external profiles (no lead)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Referential integrity: Orphan lead_feature_store rows (no lead)</td><td class='pass'>PASS</td><td>orphan_rows=0</td></tr><tr><td>Behaviour summary (internal feature_store)</td><td class='pass'>PASS</td><td>customers_with_behaviour_summary=95</td></tr><tr><td>Behaviour summary (lead_feature_store)</td><td class='pass'>PASS</td><td>leads_with_behaviour_summary=2</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>Database Consistency <span class="fail">FAIL</span></h2>
+                  <p>Passed: 1 | Failed: 3 | Warnings: 0 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Every Customer360 has Feature Store</td><td class='fail'>FAIL</td><td>profiles_without_features=95</td></tr><tr><td>Every External Profile has Lead Feature Store</td><td class='fail'>FAIL</td><td>profiles_without_lead_features=456</td></tr><tr><td>Training dataset references valid profiles</td><td class='fail'>FAIL</td><td>orphan_internal=20, orphan_external=0</td></tr><tr><td>Product catalog references valid products</td><td class='pass'>PASS</td><td>catalog_products=5</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>End to End Workflow <span class="fail">FAIL</span></h2>
+                  <p>Passed: 0 | Failed: 2 | Warnings: 0 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Internal customer end-to-end workflow</td><td class='fail'>FAIL</td><td>stages_ok=[&#x27;Customer360&#x27;, &#x27;Feature Store&#x27;, &#x27;Training Dataset&#x27;, &#x27;Repayment Prediction&#x27;, &#x27;Product Recommendation&#x27;], failed=[&#x27;Repayment Prediction&#x27;]</td></tr><tr><td>External lead end-to-end workflow</td><td class='fail'>FAIL</td><td>stages_ok=[&#x27;Import&#x27;, &#x27;Enrichment&#x27;, &#x27;Lead Analytics&#x27;, &#x27;Lead Feature Store&#x27;, &#x27;Training Dataset&#x27;, &#x27;Lead Conversion&#x27;], failed=[&#x27;Enrichment&#x27;, &#x27;Lead Analytics&#x27;, &#x27;Lead Feature Store&#x27;, &#x27;Training Dataset&#x27;]</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>External Intelligence <span class="fail">FAIL</span></h2>
+                  <p>Passed: 0 | Failed: 5 | Warnings: 2 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Lead enrichment coverage</td><td class='fail'>FAIL</td><td>profiles=458, leads=1000</td></tr><tr><td>Lead Analytics coverage</td><td class='fail'>FAIL</td><td>leads_with_stage=2/1000</td></tr><tr><td>Lead Intelligence coverage</td><td class='fail'>FAIL</td><td>leads_with_stage=2/1000</td></tr><tr><td>Behaviour Summary coverage</td><td class='fail'>FAIL</td><td>leads_with_stage=2/1000</td></tr><tr><td>Lead status ANALYTICS_READY</td><td class='warn'>WARN</td><td>analytics_ready=0/1000</td></tr><tr><td>Lead status INTELLIGENCE_VALIDATED</td><td class='warn'>WARN</td><td>intelligence_validated=2/1000</td></tr><tr><td>Lead Feature Store coverage</td><td class='fail'>FAIL</td><td>leads_in_feature_store=2/1000</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>Internal Intelligence <span class="fail">FAIL</span></h2>
+                  <p>Passed: 0 | Failed: 9 | Warnings: 0 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Customer360 coverage</td><td class='fail'>FAIL</td><td>profiles=95, customers=1000</td></tr><tr><td>Financial Analytics coverage</td><td class='fail'>FAIL</td><td>profiles_with_financial_kpis=95/1000</td></tr><tr><td>Transaction Analytics coverage</td><td class='fail'>FAIL</td><td>customers_with_stage=95/1000</td></tr><tr><td>Behaviour Analytics coverage</td><td class='fail'>FAIL</td><td>customers_with_stage=95/1000</td></tr><tr><td>Relationship Analytics coverage</td><td class='fail'>FAIL</td><td>customers_with_stage=95/1000</td></tr><tr><td>Digital &amp; Channel Analytics coverage</td><td class='fail'>FAIL</td><td>customers_with_stage=95/1000</td></tr><tr><td>Customer Health Analytics coverage</td><td class='fail'>FAIL</td><td>customers_with_stage=95/1000</td></tr><tr><td>Feature Store coverage</td><td class='fail'>FAIL</td><td>customers_with_stage=95/1000</td></tr><tr><td>Pipeline completion markers</td><td class='fail'>FAIL</td><td>pipeline_completed=91/1000</td></tr></tbody>
+                  </table>
+                </section>
+                
+                <section>
+                  <h2>Machine Learning <span class="fail">FAIL</span></h2>
+                  <p>Passed: 11 | Failed: 1 | Warnings: 1 | Skipped: 0</p>
+                  <table>
+                    <thead><tr><th>Check</th><th>Status</th><th>Reason</th></tr></thead>
+                    <tbody><tr><td>Training dataset populated</td><td class='pass'>PASS</td><td>records=20 (internal=20, external=0)</td></tr><tr><td>Training dataset has internal and external records</td><td class='fail'>FAIL</td><td>internal=20, external=0</td></tr><tr><td>Training dataset target variable valid</td><td class='pass'>PASS</td><td>invalid_targets=0</td></tr><tr><td>Training dataset no duplicate rows</td><td class='pass'>PASS</td><td>duplicate_profile_groups=0</td></tr><tr><td>Training dataset feature completeness</td><td class='warn'>WARN</td><td>rows_missing_all_core_scores=20</td></tr><tr><td>Repayment Capacity Model file exists</td><td class='pass'>PASS</td><td>C:\Users\krish\OneDrive\Desktop\Tara\backend\app\ml\models\best_repayment_model.pkl</td></tr><tr><td>Repayment Capacity Model metrics valid JSON</td><td class='pass'>PASS</td><td>keys=7</td></tr><tr><td>Repayment Capacity Model feature importance valid JSON</td><td class='pass'>PASS</td><td>keys=15</td></tr><tr><td>Lead Conversion Model file exists</td><td class='pass'>PASS</td><td>C:\Users\krish\OneDrive\Desktop\Tara\backend\app\ml\models\best_conversion_model.pkl</td></tr><tr><td>Lead Conversion Model metrics valid JSON</td><td class='pass'>PASS</td><td>keys=7</td></tr><tr><td>Lead Conversion Model feature importance valid JSON</td><td class='pass'>PASS</td><td>keys=37</td></tr><tr><td>Product Recommendation catalog module</td><td class='pass'>PASS</td><td>C:\Users\krish\OneDrive\Desktop\Tara\backend\app\ml\product_recommendation\catalog.py</td></tr><tr><td>Product Recommendation engine type</td><td class='pass'>PASS</td><td>Rule-based hybrid engine (no pickle artifact required)</td></tr></tbody>
+                  </table>
+                </section>
+                
+</body>
+</html>

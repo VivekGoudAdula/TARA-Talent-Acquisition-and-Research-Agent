@@ -1,0 +1,12 @@
+# Add to .env for 50-customer test run
+EXPECTED_CUSTOMER_COUNT=50
+EXPECTED_LEAD_COUNT=50
+CUSTOMER_MASTER_EXCEL_PATH=C:/Users/krish/OneDrive/Desktop/Tara/data/excel_subset_50/customer_master.xlsx
+TRANSACTION_HISTORY_EXCEL_PATH=C:/Users/krish/OneDrive/Desktop/Tara/data/excel_subset_50/transaction_history.xlsx
+LOAN_HISTORY_EXCEL_PATH=C:/Users/krish/OneDrive/Desktop/Tara/data/excel_subset_50/loan_history.xlsx
+DIGITAL_ACTIVITY_EXCEL_PATH=C:/Users/krish/OneDrive/Desktop/Tara/data/excel_subset_50/digital_activity.xlsx
+EXTERNAL_LEADS_EXCEL_PATH=C:/Users/krish/OneDrive/Desktop/Tara/data/excel_subset_50/external_leads.xlsx
+
+# Use forward slashes in .env on Windows (backslashes break \U escapes)
+# Then run:
+# python scripts/run_pre_xai_pipeline.py

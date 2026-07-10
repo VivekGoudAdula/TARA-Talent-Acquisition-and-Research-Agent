@@ -1,0 +1,28 @@
+{
+  "Shopping": {
+    "merchants": ["Amazon", "Flipkart", "Myntra", "Ajio", "DMart", "Reliance Fresh", "Reliance Trends", "BigBasket"],
+    "luxury_merchants": ["Myntra", "Ajio"],
+    "budget_merchants": ["DMart", "Reliance Fresh", "BigBasket"]
+  },
+  "Food": {
+    "merchants": ["Swiggy", "Zomato", "Dominos", "KFC", "McDonalds", "Pizza Hut"]
+  },
+  "Travel": {
+    "merchants": ["IRCTC", "Uber", "Ola", "Indigo", "Air India", "MakeMyTrip", "Goibibo"]
+  },
+  "Healthcare": {
+    "merchants": ["Apollo Pharmacy", "MedPlus", "Hospitals", "Fortis Healthcare", "Max Healthcare"]
+  },
+  "Entertainment": {
+    "merchants": ["Netflix", "Spotify", "BookMyShow", "Amazon Prime", "Disney Hotstar", "Sony LIV"]
+  },
+  "Investment": {
+    "merchants": ["Groww", "Zerodha", "Upstox", "Angel One", "SBI Mutual Fund", "Paytm Money"]
+  },
+  "Fuel": {
+    "merchants": ["Indian Oil", "HP Petrol", "Bharat Petroleum", "Reliance Petrol"]
+  },
+  "Education": {
+    "merchants": ["Coursera", "Udemy", "Byju's", "Unacademy", "Khan Academy"]
+  }
+}

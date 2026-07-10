@@ -1,0 +1,11 @@
+# Batch rows 51–100
+EXPECTED_CUSTOMER_COUNT=50
+EXPECTED_LEAD_COUNT=50
+CUSTOMER_MASTER_EXCEL_PATH=data/excel_batch_50_50/customer_master.xlsx
+TRANSACTION_HISTORY_EXCEL_PATH=data/excel_batch_50_50/transaction_history.xlsx
+LOAN_HISTORY_EXCEL_PATH=data/excel_batch_50_50/loan_history.xlsx
+DIGITAL_ACTIVITY_EXCEL_PATH=data/excel_batch_50_50/digital_activity.xlsx
+EXTERNAL_LEADS_EXCEL_PATH=data/excel_batch_50_50/external_leads.xlsx
+
+# python scripts/load_excel_to_mongo.py
+# python scripts/run_pre_xai_pipeline.py

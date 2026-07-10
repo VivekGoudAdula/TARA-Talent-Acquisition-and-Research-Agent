@@ -1,0 +1,11 @@
+# Add to .env for 100-customer test run
+EXPECTED_CUSTOMER_COUNT=100
+EXPECTED_LEAD_COUNT=100
+CUSTOMER_MASTER_EXCEL_PATH=C:\Users\krish\OneDrive\Desktop\Tara\data\excel_subset_100\customer_master.xlsx
+TRANSACTION_HISTORY_EXCEL_PATH=C:\Users\krish\OneDrive\Desktop\Tara\data\excel_subset_100\transaction_history.xlsx
+LOAN_HISTORY_EXCEL_PATH=C:\Users\krish\OneDrive\Desktop\Tara\data\excel_subset_100\loan_history.xlsx
+DIGITAL_ACTIVITY_EXCEL_PATH=C:\Users\krish\OneDrive\Desktop\Tara\data\excel_subset_100\digital_activity.xlsx
+EXTERNAL_LEADS_EXCEL_PATH=C:\Users\krish\OneDrive\Desktop\Tara\data\excel_subset_100\external_leads.xlsx
+
+# Then run:
+# python scripts/run_pre_xai_pipeline.py

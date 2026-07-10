@@ -1,0 +1,83 @@
+{
+  "best_model": "lightgbm",
+  "trained_at": "2026-07-10T02:38:44.732084+00:00",
+  "cv_scores": {
+    "random_forest": 0.9639957848916776,
+    "xgboost": 0.9874250814529486,
+    "lightgbm": 0.9894312709413168
+  },
+  "test_metrics": {
+    "accuracy": 0.9925,
+    "precision_macro": 0.9924001814882033,
+    "recall_macro": 0.9913325804630153,
+    "f1_macro": 0.991851285968933,
+    "per_class": {
+      "Low": {
+        "precision": 0.9868421052631579,
+        "recall": 0.974025974025974,
+        "f1": 0.9803921568627451,
+        "support": 77
+      },
+      "Medium": {
+        "precision": 0.9827586206896551,
+        "recall": 0.991304347826087,
+        "f1": 0.987012987012987,
+        "support": 115
+      },
+      "High": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 63
+      },
+      "Very High": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 145
+      }
+    },
+    "confusion_matrix": [
+      [
+        75,
+        2,
+        0,
+        0
+      ],
+      [
+        1,
+        114,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        63,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        145
+      ]
+    ],
+    "labels": [
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "roc_auc_ovr": 0.5599712727971781,
+    "best_model": "lightgbm",
+    "cv_f1_macro": {
+      "random_forest": 0.9639957848916776,
+      "xgboost": 0.9874250814529486,
+      "lightgbm": 0.9894312709413168
+    }
+  },
+  "records_used": 2000,
+  "train_size": 1600,
+  "test_size": 400
+}

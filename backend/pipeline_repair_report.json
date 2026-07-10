@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-07-06T15:20:00Z",
+  "root_cause": "Batch pipeline used a single shared SQLAlchemy session. When any customer failed mid-pipeline, the session entered a rolled-back state and blocked subsequent customers. build-all had not been fully executed for all 100 customers.",
+  "files_fixed": [
+    "app/internal_pipeline/pipeline_service.py",
+    "app/internal_pipeline/orchestrator.py",
+    "app/dependencies.py",
+    "app/repositories/customer360_repository.py",
+    "app/schemas/internal_pipeline.py",
+    "tests/test_internal_pipeline.py"
+  ],
+  "methods_changed": [
+    "InternalPipelineService._run_customer_isolated",
+    "InternalPipelineService._run_batch",
+    "InternalPipelineOrchestrator._rollback_session",
+    "create_internal_pipeline_orchestrator",
+    "Customer360Repository.update_profile"
+  ],
+  "validation_before": {
+    "database": "FAIL",
+    "customer360": "FAIL",
+    "feature_store": "FAIL",
+    "internal": "FAIL",
+    "end_to_end_workflow": "FAIL"
+  },
+  "counts_before": {
+    "customers": 100,
+    "customer_360_profile": 1,
+    "feature_store_distinct": 72,
+    "pipeline_completed": 0
+  },
+  "counts_after": "Run scripts/run_build_all_only.py to populate",
+  "validation_after": "Run POST /api/system/validate after build-all",
+  "overall_health_target": "95%",
+  "action_required": "POST /api/internal/build-all"
+}
