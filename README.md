@@ -6,7 +6,7 @@ Tara is an enterprise-grade Customer 360 Intelligence and Automated Engagement P
 
 Here is the end-to-end architecture and solution flow of the Tara platform:
 
-![IDBI Innovate 2026 Solution Flow](frontend/src/images/architecture.png)
+![IDBI Innovate 2026 Solution Flow](frontend/src/images/862fd683-9224-44fd-950a-25fdc7c2d256.jpg)
 
 
 ## 🌟 Key Features
