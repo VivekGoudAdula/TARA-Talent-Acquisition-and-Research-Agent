@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, status
 
-from app.api.ui_adapters import model_info_from_db_run
+from app.api.ui_adapters import model_info_from_db_run, regression_metrics_for_ui
 from app.dependencies import get_conversion_service, get_db
 from app.db.mongo import MongoDatabase
 from app.ml.conversion.service import ConversionService
@@ -77,14 +77,7 @@ def get_conversion_model_info(
         info = service.get_model_info()
         metrics = info.metrics or {}
         test_metrics = metrics.get("test_metrics", {}) if isinstance(metrics, dict) else {}
-        
-        # Regression model metrics (MAE, R2). Map to pseudo accuracy/F1/ROC-AUC for UI display
-        mae = test_metrics.get("mae", 0.05)
-        r2 = test_metrics.get("r2", 0.85)
-        accuracy = max(0.0, min(1.0, 1.0 - mae))
-        f1 = max(0.0, min(1.0, r2))
-        roc_auc = max(0.0, min(1.0, r2 + 0.05))
-        
+
         return {
             "trained": True,
             "algorithm": info.best_model,
@@ -92,11 +85,7 @@ def get_conversion_model_info(
             "last_trained": info.trained_at,
             "train_samples": metrics.get("train_size", info.records_used) if isinstance(metrics, dict) else info.records_used,
             "test_samples": metrics.get("test_size", 0) if isinstance(metrics, dict) else 0,
-            "metrics": {
-                "accuracy": accuracy,
-                "f1": f1,
-                "roc_auc": roc_auc,
-            },
+            "metrics": regression_metrics_for_ui(test_metrics),
             "feature_importance": info.feature_importance or {},
         }
     except Exception:

@@ -50,14 +50,14 @@ export default function DataTable({ columns, data = [], onRowClick, searchable =
           />
         </div>
       )}
-      <div className="overflow-x-auto rounded-lg border border-neutral-200">
+      <div className="overflow-x-auto rounded-lg border" style={{ borderColor: 'var(--color-border)' }}>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
               {columns.map(col => (
                 <th
                   key={col.key || col.accessor}
-                  className={`table-header select-none ${col.sortable !== false && col.accessor ? 'cursor-pointer hover:bg-neutral-100' : ''}`}
+                  className={`table-header select-none ${col.sortable !== false && col.accessor ? 'cursor-pointer' : ''}`}
                   onClick={() => col.sortable !== false && col.accessor && handleSort(col.accessor)}
                 >
                   <div className="flex items-center gap-1">
@@ -90,7 +90,7 @@ export default function DataTable({ columns, data = [], onRowClick, searchable =
           <span>{sorted.length} results</span>
           <div className="flex gap-1">
             <button className="btn btn-secondary btn-sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Prev</button>
-            <span className="px-3 py-1.5 rounded border border-neutral-200 bg-white">{page + 1} / {pages}</span>
+            <span className="px-3 py-1.5 rounded border btn-secondary">{page + 1} / {pages}</span>
             <button className="btn btn-secondary btn-sm" disabled={page >= pages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
           </div>
         </div>

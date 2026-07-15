@@ -25,6 +25,7 @@ from app.schemas.engagement import (
     VoiceCampaignRequest,
     VoiceCampaignResponse,
 )
+from app.schemas.voice_session import VoiceAgentContext, VoiceCallbackStartRequest, VoiceCallbackStartResponse
 
 router = APIRouter(prefix="/api/engagement", tags=["Engagement Layer"])
 
@@ -114,37 +115,29 @@ def get_engagement_lead_record(
     return record
 
 
-@router.get(
-    "/callback/trigger",
-    summary="Trigger immediate voice call callback to phone",
-)
-def trigger_voice_callback_route(
-    phone: str,
-    entity_id: str | None = None,
-    entity_type: str = "External",
-    service: EngagementService = Depends(get_engagement_service),
-):
-    from fastapi.responses import HTMLResponse
-    import threading
+def _callback_reason_detail(reason: str | None) -> str:
+    """Map internal callback failure codes to user-facing copy."""
+    code = (reason or "").split(":")[0].strip()
+    messages = {
+        "dedup_recent": (
+            "A callback to this number was started recently. "
+            "Please wait a few minutes before trying again."
+        ),
+        "voice_not_configured": "Voice calling is not configured on this server.",
+        "no_phone": "No phone number was found for this callback request.",
+    }
+    return messages.get(code, reason or "Unknown error")
 
-    def make_call():
-        try:
-            service.trigger_voice_callback(
-                phone=phone,
-                entity_id=entity_id,
-                entity_type=entity_type,
-            )
-        except Exception as exc:
-            from app.utils.logging_config import get_logger
-            get_logger(__name__).warning("Async callback trigger failed: %s", exc)
 
-    threading.Thread(target=make_call, daemon=True).start()
-
-    html_content = f"""
+def _callback_trigger_html(*, phone: str, success: bool, message: str, detail: str = "") -> str:
+    title = "Call Connecting..." if success else "Callback Unavailable"
+    color = "#10b981" if success else "#ef4444"
+    extra = f'<p class="detail">{detail}</p>' if detail else ""
+    return f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Call Scheduled - IDBI Bank</title>
+        <title>{title} - IDBI Bank</title>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
         <style>
             body {{
@@ -156,44 +149,184 @@ def trigger_voice_callback_route(
                 justify-content: center;
                 height: 100vh;
                 margin: 0;
-                background-image: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
             }}
             .container {{
                 text-align: center;
                 background: rgba(17, 24, 39, 0.7);
-                backdrop-filter: blur(20px);
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 24px;
                 padding: 40px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                max-width: 480px;
+                max-width: 520px;
             }}
-            h1 {{
-                color: #10b981;
-                font-size: 2rem;
-                margin-bottom: 16px;
-            }}
-            p {{
-                color: #9ca3af;
-                font-size: 1.1rem;
-                line-height: 1.6;
-            }}
-            .phone {{
-                color: #f3f4f6;
-                font-weight: 600;
-            }}
+            h1 {{ color: {color}; font-size: 2rem; margin-bottom: 16px; }}
+            p {{ color: #9ca3af; font-size: 1.05rem; line-height: 1.6; }}
+            .phone {{ color: #f3f4f6; font-weight: 600; }}
+            .detail {{ color: #d1d5db; font-size: 0.9rem; margin-top: 12px; }}
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>Call Initiating...</h1>
-            <p>Thank you! Our AI Banker is placing a call to your registered phone number (<span class="phone">{phone}</span>) right now.</p>
-            <p>Please keep your phone nearby and answer when it rings.</p>
+            <h1>{title}</h1>
+            <p>{message}</p>
+            <p>Registered number: <span class="phone">{phone}</span></p>
+            {extra}
         </div>
     </body>
     </html>
     """
-    return HTMLResponse(content=html_content)
+
+
+@router.get(
+    "/callback/go/{token}",
+    summary="Email/WhatsApp callback CTA — token link (mobile-safe)",
+)
+def callback_go_token(
+    token: str,
+    service: EngagementService = Depends(get_engagement_service),
+):
+    """Resolve email CTA token → CreateSession → LoadContext → Call."""
+    from fastapi.responses import HTMLResponse
+    from app.engagement.callback_links import CallbackLinkService
+    from app.utils.logging_config import get_logger
+
+    logger = get_logger(__name__)
+    logger.info("Email callback CTA clicked token=%s", token[:8])
+
+    try:
+        links = CallbackLinkService(service._db)
+        doc = links.resolve_token(token)
+        if not doc:
+            html = _callback_trigger_html(
+                phone="—",
+                success=False,
+                message="This callback link has expired or is invalid.",
+                detail="Please request a new email or reply CALL ME on WhatsApp.",
+            )
+            return HTMLResponse(content=html, status_code=410)
+
+        result = service.run_voice_callback(
+            phone=doc["phone"],
+            entity_id=doc["entity_id"],
+            entity_type=doc.get("entity_type", "External"),
+            source_channel=doc.get("source_channel", "Email"),
+            campaign=doc.get("campaign"),
+            skip_dedup=True,
+        )
+        links.mark_used(token)
+
+        if result.triggered:
+            ms = result.timing_ms.get("total", 0)
+            html = _callback_trigger_html(
+                phone=doc["phone"],
+                success=True,
+                message=(
+                    "Our AI banker is calling you now. Please answer the incoming call. "
+                    f"Call initiated in {ms:.0f}ms."
+                ),
+                detail=f"Session: {result.session_id}",
+            )
+            return HTMLResponse(content=html)
+
+        html = _callback_trigger_html(
+            phone=doc["phone"],
+            success=False,
+            message="We could not place your callback call right now.",
+            detail=_callback_reason_detail(result.reason or result.message),
+        )
+        return HTMLResponse(content=html, status_code=503)
+    except Exception as exc:
+        logger.exception("Callback CTA failed token=%s", token[:8])
+        html = _callback_trigger_html(
+            phone="—",
+            success=False,
+            message="Something went wrong starting your callback.",
+            detail=str(exc)[:300],
+        )
+        return HTMLResponse(content=html, status_code=500)
+
+
+@router.get(
+    "/callback/trigger",
+    summary="Trigger immediate voice call callback to phone",
+)
+def trigger_voice_callback_route(
+    phone: str,
+    entity_id: str | None = None,
+    entity_type: str = "External",
+    source_channel: str = Query(default="Email", description="Email | WhatsApp | Web"),
+    campaign: str | None = None,
+    service: EngagementService = Depends(get_engagement_service),
+):
+    from fastapi.responses import HTMLResponse
+
+    result = service.run_voice_callback(
+        phone=phone,
+        entity_id=entity_id,
+        entity_type=entity_type,
+        source_channel=source_channel,
+        campaign=campaign,
+    )
+
+    if result.triggered:
+        ms = result.timing_ms.get("total", 0)
+        html = _callback_trigger_html(
+            phone=phone,
+            success=True,
+            message=(
+                "Our AI banker is calling you now. Please answer the incoming call. "
+                f"Call initiated in {ms:.0f}ms."
+            ),
+            detail=f"Session: {result.session_id}",
+        )
+        return HTMLResponse(content=html)
+
+    html = _callback_trigger_html(
+        phone=phone,
+        success=False,
+        message="We could not place your callback call right now.",
+        detail=_callback_reason_detail(result.reason or result.message),
+    )
+    return HTMLResponse(content=html, status_code=503)
+
+
+@router.post(
+    "/callback/start",
+    response_model=VoiceCallbackStartResponse,
+    summary="AI Callback — CreateSession → LoadContext → Call",
+    description=(
+        "Orchestrates an AI voice callback after Email/WhatsApp CTA click. "
+        "Creates a session, loads full agent context, and initiates the outbound call."
+    ),
+)
+def start_ai_callback(
+    request: VoiceCallbackStartRequest,
+    service: EngagementService = Depends(get_engagement_service),
+) -> VoiceCallbackStartResponse:
+    if not request.entity_id:
+        raise HTTPException(status_code=400, detail="entity_id is required")
+    return service.start_ai_callback(
+        phone=request.phone,
+        entity_id=request.entity_id,
+        entity_type=request.entity_type,
+        name=request.name,
+        campaign=request.campaign,
+        source_channel=request.source_channel,
+    )
+
+
+@router.get(
+    "/callback/session/{session_id}/context",
+    response_model=VoiceAgentContext,
+    summary="Load voice agent context for a callback session",
+)
+def get_callback_session_context(
+    session_id: str,
+    service: EngagementService = Depends(get_engagement_service),
+) -> VoiceAgentContext:
+    context = service.get_callback_session_context(session_id)
+    if not context:
+        raise HTTPException(status_code=404, detail="Callback session not found")
+    return context
 
 
 @router.post(
@@ -237,6 +370,285 @@ def voice_platform_health(
     service: EngagementService = Depends(get_engagement_service),
 ) -> dict:
     return service.voice_health()
+
+
+@router.api_route(
+    "/voice/twiml/callback/{session_id}",
+    methods=["GET", "POST"],
+    summary="TwiML for AI callback greeting (Twilio fallback)",
+)
+async def voice_callback_twiml(
+    session_id: str,
+    service: EngagementService = Depends(get_engagement_service),
+) -> Response:
+    from app.config import get_settings
+    from app.engagement.callback_links import resolve_public_api_base, twilio_webhook_url
+    from app.engagement.voice_conversation_agent import VoiceConversationAgent
+    from app.engagement.voice_twiml import build_conversation_twiml
+    from app.utils.logging_config import get_logger
+
+    logger = get_logger(__name__)
+
+    context = service.get_callback_session_context(session_id)
+    if not context:
+        return Response(
+            content='<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, session not found.</Say></Response>',
+            media_type="application/xml",
+        )
+
+    base = resolve_public_api_base(get_settings()).rstrip("/")
+    gather_url = twilio_webhook_url(base, f"/api/engagement/voice/twiml/gather/{session_id}")
+    outcome_url = twilio_webhook_url(
+        base, f"/api/engagement/voice/twiml/outcome/{session_id}?outcome=neutral"
+    )
+
+    agent = VoiceConversationAgent(service._db)
+    opening = agent.generate_opening(session_id, context)
+    _sync_voice_turn(service, context, agent_body=opening.reply, session_id=session_id)
+    logger.info("Voice callback opening session=%s lang=%s", session_id, opening.language)
+
+    twiml = build_conversation_twiml(
+        say_text=opening.reply,
+        gather_url=gather_url,
+        outcome_url=outcome_url,
+        polly_voice=opening.polly_voice,
+        polly_language=opening.polly_language,
+        speech_hints=opening.speech_hints,
+    )
+    return Response(content=twiml, media_type="application/xml")
+
+
+@router.post("/voice/twiml/gather/{session_id}", summary="TwiML gather handler for callback")
+async def voice_callback_gather_twiml(
+    session_id: str,
+    request: Request,
+    service: EngagementService = Depends(get_engagement_service),
+) -> Response:
+    from app.config import get_settings
+    from app.engagement.callback_links import resolve_public_api_base, twilio_webhook_url
+    from app.engagement.voice_conversation_agent import VoiceConversationAgent
+    from app.engagement.voice_twiml import build_conversation_twiml, build_redirect_twiml
+    from app.utils.logging_config import get_logger
+
+    logger = get_logger(__name__)
+
+    context = service.get_callback_session_context(session_id)
+    if not context:
+        return Response(
+            content='<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, session not found.</Say></Response>',
+            media_type="application/xml",
+        )
+
+    form = dict(await request.form())
+    speech = str(form.get("SpeechResult") or form.get("Digits") or "")
+    call_sid = str(form.get("CallSid") or "")
+    logger.info(
+        "Voice gather session=%s speech=%r digits=%r call_sid=%s",
+        session_id,
+        form.get("SpeechResult"),
+        form.get("Digits"),
+        call_sid[:12] if call_sid else "",
+    )
+
+    base = resolve_public_api_base(get_settings()).rstrip("/")
+    gather_url = twilio_webhook_url(base, f"/api/engagement/voice/twiml/gather/{session_id}")
+    transfer_url = twilio_webhook_url(base, f"/api/engagement/voice/twiml/transfer/{session_id}")
+    outcome_url = twilio_webhook_url(
+        base, f"/api/engagement/voice/twiml/outcome/{session_id}?outcome=neutral"
+    )
+
+    agent = VoiceConversationAgent(service._db)
+    turn = agent.handle_turn(
+        session_id=session_id,
+        context=context,
+        user_input=speech,
+        call_sid=call_sid or None,
+    )
+    if speech:
+        _sync_voice_turn(
+            service, context,
+            customer_body=speech, agent_body=turn.reply, call_sid=call_sid, session_id=session_id,
+        )
+    elif turn.reply:
+        _sync_voice_turn(
+            service, context,
+            customer_body="", agent_body=turn.reply, call_sid=call_sid, session_id=session_id,
+        )
+
+    if turn.action == "transfer_rm":
+        twiml = build_redirect_twiml(
+            say_text=turn.reply,
+            redirect_url=transfer_url,
+            polly_voice=turn.polly_voice,
+            polly_language=turn.polly_language,
+        )
+        return Response(content=twiml, media_type="application/xml")
+
+    if turn.action == "end_call":
+        closing_url = f"{outcome_url.split('?')[0]}?outcome={turn.outcome or 'neutral'}"
+        twiml = build_redirect_twiml(
+            say_text=turn.reply,
+            redirect_url=closing_url,
+            polly_voice=turn.polly_voice,
+            polly_language=turn.polly_language,
+        )
+        return Response(content=twiml, media_type="application/xml")
+
+    twiml = build_conversation_twiml(
+        say_text=turn.reply,
+        gather_url=gather_url,
+        outcome_url=outcome_url,
+        polly_voice=turn.polly_voice,
+        polly_language=turn.polly_language,
+        speech_hints=turn.speech_hints,
+    )
+    return Response(content=twiml, media_type="application/xml")
+
+
+def _sync_voice_turn(
+    service: EngagementService,
+    context: VoiceAgentContext,
+    *,
+    customer_body: str | None = None,
+    agent_body: str | None = None,
+    call_sid: str = "",
+    session_id: str = "",
+) -> None:
+    if not customer_body and not agent_body:
+        return
+    try:
+        service.sync_conversation_turn(
+            {
+                "channel": "Voice",
+                "phone": context.phone,
+                "entity_id": context.customer_id,
+                "entity_type": context.entity_type,
+                "customer_body": customer_body or "(call connected)",
+                "agent_body": agent_body,
+                "provider_sid": call_sid or None,
+                "session_id": session_id or None,
+            }
+        )
+    except Exception:
+        pass
+
+
+def _record_twilio_voice_outcome(
+    service: EngagementService,
+    *,
+    session_id: str,
+    context: VoiceAgentContext | None,
+    outcome: str,
+    call_sid: str = "",
+) -> None:
+    if not context:
+        return
+    from app.engagement.voice_conversation_agent import VoiceConversationAgent
+    from app.schemas.engagement import VoiceCallOutcomeRequest
+
+    preview = VoiceConversationAgent(service._db).get_transcript_preview(session_id)
+    try:
+        service.record_voice_call_outcome(
+            VoiceCallOutcomeRequest(
+                call_sid=call_sid or f"session:{session_id}",
+                entity_id=context.customer_id,
+                entity_type=context.entity_type,
+                recipient=context.phone,
+                call_status="completed",
+                duration_seconds=0,
+                intent=context.intent,
+                outcome=outcome,
+                transcript_preview=preview or None,
+                metadata={"session_id": session_id, "provider": "twilio_conversational"},
+            )
+        )
+    except Exception:
+        pass
+
+
+@router.post("/voice/twiml/transfer/{session_id}", summary="RM handoff after interested callback")
+async def voice_callback_transfer(
+    session_id: str,
+    request: Request,
+    service: EngagementService = Depends(get_engagement_service),
+) -> Response:
+    from app.engagement.voice_locale import resolve_voice_locale
+    from app.engagement.voice_twiml import build_end_twiml
+    from app.onboarding.orchestrator import OnboardingOrchestrator
+    from app.schemas.onboarding import LeadResponseCaptureRequest
+
+    form = dict(await request.form())
+    call_sid = str(form.get("CallSid") or "")
+    context = service.get_callback_session_context(session_id)
+    if context:
+        OnboardingOrchestrator(service._db).process_lead_response(
+            LeadResponseCaptureRequest(
+                entity_id=context.customer_id,
+                entity_type=context.entity_type,
+                channel="Voice",
+                response_type="interested",
+                phone=context.phone,
+                name=context.name,
+            )
+        )
+        _record_twilio_voice_outcome(
+            service,
+            session_id=session_id,
+            context=context,
+            outcome="interested",
+            call_sid=call_sid,
+        )
+
+    locale = resolve_voice_locale(context.lang if context else "english")
+    from app.config import get_settings
+
+    rm_phone = get_settings().engagement_callback_phone or "our relationship manager"
+    closing = (
+        f"Thank you. A relationship manager will call you shortly. "
+        f"You can also reach us at {rm_phone}. Goodbye."
+    )
+    twiml = build_end_twiml(
+        say_text=closing,
+        polly_voice=str(locale["polly_voice"]),
+        polly_language=str(locale["polly_language"]),
+    )
+    return Response(content=twiml, media_type="application/xml")
+
+
+@router.post("/voice/twiml/outcome/{session_id}", summary="Neutral/declined callback outcome")
+async def voice_callback_outcome(
+    session_id: str,
+    request: Request,
+    outcome: str = Query(default="neutral"),
+    service: EngagementService = Depends(get_engagement_service),
+) -> Response:
+    from app.engagement.voice_locale import resolve_voice_locale
+    from app.engagement.voice_twiml import build_end_twiml
+
+    form = dict(await request.form())
+    call_sid = str(form.get("CallSid") or "")
+    context = service.get_callback_session_context(session_id)
+    resolved_outcome = (outcome or "neutral").strip().lower()
+    if context:
+        _record_twilio_voice_outcome(
+            service,
+            session_id=session_id,
+            context=context,
+            outcome=resolved_outcome,
+            call_sid=call_sid,
+        )
+
+    locale = resolve_voice_locale(context.lang if context else "english")
+    if resolved_outcome == "declined":
+        message = "Thank you for your time. We will share offer details on WhatsApp or SMS."
+    else:
+        message = "Thank you for speaking with IDBI Bank. We will follow up shortly."
+    twiml = build_end_twiml(
+        say_text=message,
+        polly_voice=str(locale["polly_voice"]),
+        polly_language=str(locale["polly_language"]),
+    )
+    return Response(content=twiml, media_type="application/xml")
 
 
 @router.post(

@@ -86,6 +86,15 @@ class ConversionAPITests(unittest.TestCase):
             )
             self.assertEqual(predict_features.status_code, 200, predict_features.text)
 
+            model_info = client.get("/api/ml/conversion/model-info")
+            self.assertEqual(model_info.status_code, 200, model_info.text)
+            info = model_info.json()
+            self.assertEqual(info["metrics"]["model_type"], "regression")
+            self.assertIn("mae", info["metrics"])
+            self.assertIn("rmse", info["metrics"])
+            self.assertIn("r2", info["metrics"])
+            self.assertNotIn("accuracy", info["metrics"])
+
 
 if __name__ == "__main__":
     unittest.main()

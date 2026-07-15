@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Bell, RefreshCw, Wifi, WifiOff, Sun, Moon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
+import { useTheme } from '../../context/ThemeContext';
 
 function useApiHealth() {
   const [online, setOnline] = useState(null);
@@ -15,22 +16,34 @@ function useApiHealth() {
   return online;
 }
 
-export default function Topbar({ title }) {
+export default function Topbar() {
   const qc = useQueryClient();
   const online = useApiHealth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="h-[60px] bg-white border-b border-neutral-200 flex items-center justify-between px-6 shrink-0">
-      <h1 className="text-base font-semibold text-neutral-800">{title}</h1>
+    <header
+      className="h-[60px] bg-surface border-b flex items-center justify-end px-6 shrink-0"
+      style={{ borderColor: 'var(--color-border)' }}
+    >
       <div className="flex items-center gap-3">
         {/* API Health indicator */}
         <div className="flex items-center gap-1.5 text-xs">
           {online === null ? null : online ? (
-            <><Wifi size={13} className="text-success-500" /><span className="text-success-500 font-medium">API Online</span></>
+            <><Wifi size={13} className="text-success-500" /><span className="text-success-500 font-medium">Backend online</span></>
           ) : (
-            <><WifiOff size={13} className="text-danger-500" /><span className="text-danger-500 font-medium">API Offline</span></>
+            <><WifiOff size={13} className="text-danger-500" /><span className="text-danger-500 font-medium">Backend offline</span></>
           )}
         </div>
+
+        <button
+          className="btn-ghost btn-sm"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
 
         <button
           className="btn-ghost btn-sm"

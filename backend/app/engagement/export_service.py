@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -52,16 +53,42 @@ class EngagementExportService:
         require_consent: bool = True,
     ) -> list[EngagementLeadRecord]:
         types = {t.strip().title() for t in (profile_types or ["External", "Internal"])}
+        # Cap MongoDB reads for preview/export — avoids full collection scans on Cosmos DB.
+        db_fetch_limit: int | None = None
+        if limit is not None:
+            db_fetch_limit = min(max((limit + offset) * 3, 20), 100)
+
         records: list[EngagementLeadRecord] = []
 
-        if "External" in types:
-            ext = self._build_external_records(require_phone, require_consent)
-            ext = self._sort_and_slice(ext, offset, limit)
-            records.extend(ext)
-        if "Internal" in types:
-            internal = self._build_internal_records(require_phone, require_consent)
-            internal = self._sort_and_slice(internal, offset, limit)
-            records.extend(internal)
+        if "External" in types and "Internal" in types and db_fetch_limit is not None:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                f_ext = pool.submit(
+                    self._build_external_records,
+                    require_phone,
+                    require_consent,
+                    db_limit=db_fetch_limit,
+                )
+                f_int = pool.submit(
+                    self._build_internal_records,
+                    require_phone,
+                    require_consent,
+                    db_limit=max(db_fetch_limit // 2, 10),
+                )
+                records.extend(f_ext.result())
+                records.extend(f_int.result())
+        else:
+            if "External" in types:
+                records.extend(
+                    self._build_external_records(
+                        require_phone, require_consent, db_limit=db_fetch_limit
+                    )
+                )
+            if "Internal" in types:
+                records.extend(
+                    self._build_internal_records(
+                        require_phone, require_consent, db_limit=db_fetch_limit
+                    )
+                )
 
         if min_conversion_probability is not None:
             records = [
@@ -71,6 +98,8 @@ class EngagementExportService:
                 and r.conversion_probability >= min_conversion_probability
             ]
 
+        records = self._sort_and_slice(records, offset, limit)
+
         logger.info(
             "Built %d engagement records (types=%s offset=%d limit=%s)",
             len(records),
@@ -78,6 +107,83 @@ class EngagementExportService:
             offset,
             limit,
         )
+        return records
+
+    def build_preview_records(
+        self,
+        *,
+        profile_types: list[str] | None = None,
+        limit: int = 20,
+        min_conversion_probability: float | None = None,
+    ) -> list[EngagementLeadRecord]:
+        """Fast preview path — minimal Cosmos DB round-trips for the engagement UI."""
+        types = {t.strip().title() for t in (profile_types or ["External"])}
+        records: list[EngagementLeadRecord] = []
+        fetch_cap = min(max(limit * 3, 15), 60)
+
+        if "External" in types:
+            cursor = self._db.external_leads.find(
+                {},
+                {
+                    "lead_id": 1,
+                    "phone_number": 1,
+                    "full_name": 1,
+                    "email": 1,
+                    "consent": 1,
+                },
+            ).limit(fetch_cap)
+            leads = list(cursor)
+            lead_ids = [str(l["lead_id"]) for l in leads if l.get("lead_id")]
+            conversions: dict[str, dict[str, Any]] = {}
+            if lead_ids:
+                conversions = {
+                    str(c["lead_id"]): c
+                    for c in self._db.conversion_predictions.find(
+                        {"lead_id": {"$in": lead_ids}},
+                        {
+                            "lead_id": 1,
+                            "conversion_probability": 1,
+                            "marketing_priority": 1,
+                            "lead_priority": 1,
+                        },
+                    )
+                    if c.get("lead_id")
+                }
+            for lead_doc in leads:
+                if not lead_doc.get("consent", False):
+                    continue
+                phone = (lead_doc.get("phone_number") or "").strip()
+                if not phone:
+                    continue
+                lead_id = str(lead_doc.get("lead_id", ""))
+                conv_doc = conversions.get(lead_id)
+                records.append(
+                    self._assemble_record(
+                        entity_type="External",
+                        entity_id=lead_id,
+                        profile_id=None,
+                        phone=phone,
+                        name=(lead_doc.get("full_name") or "Customer").strip(),
+                        email=lead_doc.get("email"),
+                        preferred_channel=None,
+                        product_doc=None,
+                        repayment_doc=None,
+                        conv_doc=conv_doc,
+                        expl_doc=None,
+                        consent=bool(lead_doc.get("consent")),
+                    )
+                )
+
+        if min_conversion_probability is not None:
+            records = [
+                r
+                for r in records
+                if r.conversion_probability is not None
+                and r.conversion_probability >= min_conversion_probability
+            ]
+
+        records = self._sort_and_slice(records, 0, limit)
+        logger.info("Built %d lightweight preview records (limit=%s)", len(records), limit)
         return records
 
     @staticmethod
@@ -210,33 +316,66 @@ class EngagementExportService:
         return buffer.getvalue()
 
     def _build_external_records(
-        self, require_phone: bool, require_consent: bool
+        self,
+        require_phone: bool,
+        require_consent: bool,
+        *,
+        db_limit: int | None = None,
     ) -> list[EngagementLeadRecord]:
-        leads = list(self._db.external_leads.find())
+        cursor = self._db.external_leads.find()
+        if db_limit is not None:
+            cursor = cursor.limit(db_limit)
+        leads = list(cursor)
         lead_ids = [str(l["lead_id"]) for l in leads if l.get("lead_id")]
 
-        profiles = {
-            str(p["lead_id"]): p
-            for p in self._db.external_customer_profile.find({"lead_id": {"$in": lead_ids}})
-        }
-        profile_ids = [str(p["profile_id"]) for p in profiles.values() if p.get("profile_id")]
+        profiles: dict[str, dict[str, Any]] = {}
+        products: dict[str, dict[str, Any]] = {}
+        repayments: dict[str, dict[str, Any]] = {}
+        conversions: dict[str, dict[str, Any]] = {}
+        explains: dict[str, dict[str, Any]] = {}
 
-        products = {
-            str(p["profile_id"]): p
-            for p in self._db.product_recommendations.find({"profile_id": {"$in": profile_ids}})
-        }
-        repayments = {
-            str(r["profile_id"]): r
-            for r in self._db.repayment_predictions.find({"profile_id": {"$in": profile_ids}})
-        }
-        conversions = {
-            str(c["lead_id"]): c
-            for c in self._db.conversion_predictions.find({"lead_id": {"$in": lead_ids}})
-        }
-        explains = {
-            str(e["customer_id"]): e
-            for e in self._db.explainability_reports.find({"customer_id": {"$in": lead_ids}})
-        }
+        if lead_ids:
+            with ThreadPoolExecutor(max_workers=5) as pool:
+                f_profiles = pool.submit(
+                    lambda: list(
+                        self._db.external_customer_profile.find({"lead_id": {"$in": lead_ids}})
+                    )
+                )
+                f_conversions = pool.submit(
+                    lambda: list(
+                        self._db.conversion_predictions.find({"lead_id": {"$in": lead_ids}})
+                    )
+                )
+                f_explains = pool.submit(
+                    lambda: list(
+                        self._db.explainability_reports.find({"customer_id": {"$in": lead_ids}})
+                    )
+                )
+                profile_rows = f_profiles.result()
+                conversion_rows = f_conversions.result()
+                explain_rows = f_explains.result()
+
+            profiles = {str(p["lead_id"]): p for p in profile_rows if p.get("lead_id")}
+            profile_ids = [str(p["profile_id"]) for p in profiles.values() if p.get("profile_id")]
+            conversions = {str(c["lead_id"]): c for c in conversion_rows if c.get("lead_id")}
+            explains = {str(e["customer_id"]): e for e in explain_rows if e.get("customer_id")}
+
+            if profile_ids:
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    f_products = pool.submit(
+                        lambda: list(
+                            self._db.product_recommendations.find({"profile_id": {"$in": profile_ids}})
+                        )
+                    )
+                    f_repayments = pool.submit(
+                        lambda: list(
+                            self._db.repayment_predictions.find({"profile_id": {"$in": profile_ids}})
+                        )
+                    )
+                    product_rows = f_products.result()
+                    repayment_rows = f_repayments.result()
+                products = {str(p["profile_id"]): p for p in product_rows if p.get("profile_id")}
+                repayments = {str(r["profile_id"]): r for r in repayment_rows if r.get("profile_id")}
 
         records: list[EngagementLeadRecord] = []
         for lead_doc in leads:
@@ -273,33 +412,63 @@ class EngagementExportService:
         return records
 
     def _build_internal_records(
-        self, require_phone: bool, require_consent: bool
+        self,
+        require_phone: bool,
+        require_consent: bool,
+        *,
+        db_limit: int | None = None,
     ) -> list[EngagementLeadRecord]:
-        profiles = list(self._db.customer_360_profile.find())
+        cursor = self._db.customer_360_profile.find()
+        if db_limit is not None:
+            cursor = cursor.limit(db_limit)
+        profiles = list(cursor)
         customer_ids = [str(p["customer_id"]) for p in profiles if p.get("customer_id")]
 
-        customers = {
-            str(c["customer_id"]): c
-            for c in self._db.customers.find({"customer_id": {"$in": customer_ids}})
-        }
-        consents = {
-            str(c["customer_id"]): c
-            for c in self._db.consent.find({"customer_id": {"$in": customer_ids}})
-        }
+        customers: dict[str, dict[str, Any]] = {}
+        consents: dict[str, dict[str, Any]] = {}
+        products: dict[str, dict[str, Any]] = {}
+        repayments: dict[str, dict[str, Any]] = {}
+        explains: dict[str, dict[str, Any]] = {}
+
         profile_ids = [str(p["profile_id"]) for p in profiles if p.get("profile_id")]
 
-        products = {
-            str(p["profile_id"]): p
-            for p in self._db.product_recommendations.find({"profile_id": {"$in": profile_ids}})
-        }
-        repayments = {
-            str(r["profile_id"]): r
-            for r in self._db.repayment_predictions.find({"profile_id": {"$in": profile_ids}})
-        }
-        explains = {
-            str(e["customer_id"]): e
-            for e in self._db.explainability_reports.find({"customer_id": {"$in": customer_ids}})
-        }
+        if customer_ids:
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                f_customers = pool.submit(
+                    lambda: list(self._db.customers.find({"customer_id": {"$in": customer_ids}}))
+                )
+                f_consents = pool.submit(
+                    lambda: list(self._db.consent.find({"customer_id": {"$in": customer_ids}}))
+                )
+                f_explains = pool.submit(
+                    lambda: list(
+                        self._db.explainability_reports.find({"customer_id": {"$in": customer_ids}})
+                    )
+                )
+                customer_rows = f_customers.result()
+                consent_rows = f_consents.result()
+                explain_rows = f_explains.result()
+
+            customers = {str(c["customer_id"]): c for c in customer_rows if c.get("customer_id")}
+            consents = {str(c["customer_id"]): c for c in consent_rows if c.get("customer_id")}
+            explains = {str(e["customer_id"]): e for e in explain_rows if e.get("customer_id")}
+
+        if profile_ids:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                f_products = pool.submit(
+                    lambda: list(
+                        self._db.product_recommendations.find({"profile_id": {"$in": profile_ids}})
+                    )
+                )
+                f_repayments = pool.submit(
+                    lambda: list(
+                        self._db.repayment_predictions.find({"profile_id": {"$in": profile_ids}})
+                    )
+                )
+                product_rows = f_products.result()
+                repayment_rows = f_repayments.result()
+            products = {str(p["profile_id"]): p for p in product_rows if p.get("profile_id")}
+            repayments = {str(r["profile_id"]): r for r in repayment_rows if r.get("profile_id")}
 
         records: list[EngagementLeadRecord] = []
         for profile_doc in profiles:

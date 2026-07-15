@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SectionPanel from '../components/ui/SectionPanel';
 import Badge from '../components/ui/Badge';
 import { PageSpinner, ErrorState } from '../components/ui/States';
+import PageHeader from '../components/ui/PageHeader';
 import { useCrmCustomers, useExplainReport } from '../api/hooks';
 import { buildDummyExplainReport } from '../api/dummyData';
 import { RefreshCw, Activity, TrendingUp, ShieldCheck, AlertCircle } from 'lucide-react';
@@ -110,7 +111,13 @@ export default function ExplainableAI() {
   }) : null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-6">
+      <PageHeader
+        title="Explainable AI"
+        subtitle="AI-driven explanations for repayment, conversion, and product recommendations."
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* ── Left: Customer List ─────────────────────────────────────────── */}
       <SectionPanel title="Customer Profiles" subtitle="Click to load AI explanation from database">
         <div className="space-y-1 max-h-[620px] overflow-y-auto pr-1">

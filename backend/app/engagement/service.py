@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -26,6 +27,10 @@ from app.schemas.engagement import (
 )
 
 
+_PREVIEW_CACHE_TTL_SEC = 90
+_preview_cache: dict[tuple, tuple[float, list[EngagementLeadRecord]]] = {}
+
+
 class EngagementService:
     """Coordinates export, personalization, and multi-channel delivery."""
 
@@ -34,7 +39,11 @@ class EngagementService:
         self._export = EngagementExportService(db)
         self._repo = EngagementRepository(db)
         self._voice = voice_bridge or VoiceBridge()
-        self._orchestrator = EngagementOrchestrator(self._export, self._repo)
+        self._orchestrator = EngagementOrchestrator(
+            self._export,
+            self._repo,
+            personalize=PersonalizeService(db=db),
+        )
 
     def export_leads(
         self,
@@ -64,12 +73,20 @@ class EngagementService:
         limit: int | None = 10,
         min_conversion_probability: float | None = None,
     ) -> list[EngagementLeadRecord]:
-        records = self._export.build_records(
+        types_key = tuple(sorted({t.strip().title() for t in (profile_types or ["External", "Internal"])}))
+        cache_key = (types_key, limit, min_conversion_probability)
+        cached = _preview_cache.get(cache_key)
+        if cached and (time.time() - cached[0]) < _PREVIEW_CACHE_TTL_SEC:
+            return cached[1]
+
+        records = self._export.build_preview_records(
             profile_types=profile_types,
-            limit=limit,
+            limit=limit or 20,
             min_conversion_probability=min_conversion_probability,
         )
-        return [EngagementLeadRecord(**adapt_engagement_lead(r.model_dump(mode="json"))) for r in records]
+        result = [EngagementLeadRecord(**adapt_engagement_lead(r.model_dump(mode="json"))) for r in records]
+        _preview_cache[cache_key] = (time.time(), result)
+        return result
 
     def channel_status(self) -> ChannelStatusResponse:
         raw = self._orchestrator.channel_status()
@@ -77,7 +94,14 @@ class EngagementService:
         return ChannelStatusResponse(channels=adapted["channels"])
 
     def voice_health(self) -> dict:
-        return self._voice.health_check()
+        from app.config import get_settings
+        from app.engagement.channels.twilio_voice import TwilioVoiceClient
+
+        settings = get_settings()
+        return {
+            "vanguard_voice": self._voice.health_check(),
+            "twilio_voice_configured": TwilioVoiceClient(settings).is_configured,
+        }
 
     def run_outreach(self, request: OutreachRequest) -> OutreachResponse:
         records = self._export.build_records(
@@ -107,7 +131,7 @@ class EngagementService:
     def send_custom(self, request: CustomSendRequest) -> CustomSendResponse:
         """Send one custom personalized message to any phone (e.g. sandbox testing)."""
         record = self._build_record_for_custom_send(request)
-        personalize = PersonalizeService()
+        personalize = PersonalizeService(db=self._db)
         msg = personalize.build(record)
 
         if request.message:
@@ -269,20 +293,95 @@ class EngagementService:
             file_path=str(csv_path),
         )
 
+    def start_ai_callback(
+        self,
+        *,
+        phone: str,
+        entity_id: str,
+        entity_type: str = "External",
+        name: str | None = None,
+        campaign: str | None = None,
+        source_channel: str | None = None,
+    ):
+        from app.engagement.callback_orchestrator import CallbackOrchestrator
+
+        return CallbackOrchestrator(self._db, voice_bridge=self._voice).start_callback(
+            phone=phone,
+            entity_id=entity_id,
+            entity_type=entity_type,
+            name=name,
+            campaign=campaign,
+            source_channel=source_channel,
+        )
+
+    def get_callback_session_context(self, session_id: str):
+        from app.engagement.callback_orchestrator import CallbackOrchestrator
+
+        return CallbackOrchestrator(self._db, voice_bridge=self._voice).get_session_context(
+            session_id
+        )
+
+    def run_voice_callback(
+        self,
+        phone: str,
+        entity_id: str | None = None,
+        entity_type: str = "External",
+        *,
+        source_channel: str | None = "Web",
+        campaign: str | None = None,
+        skip_dedup: bool = False,
+    ):
+        from app.engagement.callback_orchestrator import CallbackOrchestrator
+
+        resolved_entity_id = entity_id
+        if not resolved_entity_id:
+            digits = "".join(c for c in phone if c.isdigit())[-10:]
+            resolved_entity_id = f"phone:{digits}" if digits else None
+        if not resolved_entity_id:
+            from app.schemas.voice_session import VoiceAgentContext, VoiceCallbackStartResponse
+
+            return VoiceCallbackStartResponse(
+                session_id="",
+                triggered=False,
+                context=VoiceAgentContext(name="Customer", customer_id="", phone=phone),
+                reason="entity_id is required for AI callback",
+                message="Missing lead/customer id in callback link",
+            )
+
+        return CallbackOrchestrator(self._db, voice_bridge=self._voice).start_callback(
+            phone=phone,
+            entity_id=resolved_entity_id,
+            entity_type=entity_type,
+            source_channel=source_channel,
+            campaign=campaign,
+            skip_dedup=skip_dedup,
+        )
+
     def trigger_voice_callback(
         self,
         phone: str,
         entity_id: str | None = None,
         entity_type: str = "External",
+        *,
+        source_channel: str | None = "Web",
+        campaign: str | None = None,
     ) -> dict:
-        if not self._voice.is_configured:
-            raise VoiceBridgeError("Voice platform is not configured.")
-        return self._voice.initiate_call_by_phone(
+        result = self.run_voice_callback(
             phone=phone,
-            agent_id="lending_offer_agent",
             entity_id=entity_id,
             entity_type=entity_type,
+            source_channel=source_channel,
+            campaign=campaign,
         )
+        if not result.triggered:
+            raise VoiceBridgeError(result.reason or "Callback not started")
+        return {
+            "session_id": result.session_id,
+            "call_sid": result.call_sid,
+            "call": result.call,
+            "timing_ms": result.timing_ms,
+            "context": result.context.model_dump(),
+        }
 
     @staticmethod
     def _to_result_response(result) -> ChannelDeliveryResultResponse:
@@ -382,6 +481,7 @@ class EngagementService:
             entity_id=payload.get("entity_id"),
             entity_type=payload.get("entity_type"),
             provider_sid=payload.get("provider_sid"),
+            session_id=payload.get("session_id"),
         )
 
     def get_conversation_thread(
@@ -434,7 +534,7 @@ class EngagementService:
         record = self._export.build_record_for_entity(entity_id, "External")
         if not record:
             return {"error": "Lead not found"}
-        message = PersonalizeService().build(record)
+        message = PersonalizeService(db=self._db).build(record)
         result = self._orchestrator._sms.compliance_check(record, message)
         return {
             "entity_id": entity_id,

@@ -1,27 +1,27 @@
 {
-  "generated_at": "2026-07-09T09:33:35.351902+00:00",
-  "overall_health": "73.5%",
+  "generated_at": "2026-07-10T17:00:24.522412+00:00",
+  "overall_health": "89.9%",
   "system_health": {
-    "database": "FAIL",
+    "database": "PASS",
     "internal": "FAIL",
-    "external": "FAIL",
+    "external": "WARN",
     "customer360": "FAIL",
     "feature_store": "FAIL",
-    "behaviour_analytics": "FAIL",
-    "ml": "FAIL",
+    "behaviour_analytics": "PASS",
+    "ml": "WARN",
     "repayment_model": "PASS",
     "product_recommendation": "PASS",
     "lead_conversion": "PASS",
     "api": "PASS",
     "data_integrity": "FAIL",
     "end_to_end_workflow": "FAIL",
-    "overall_health": "73.5%"
+    "overall_health": "89.9%"
   },
   "categories": [
     {
       "category": "API",
       "status": "PASS",
-      "passed": 32,
+      "passed": 33,
       "failed": 0,
       "warned": 0,
       "skipped": 0,
@@ -161,6 +161,13 @@
         },
         {
           "category": "API",
+          "name": "Repayment predict (External)",
+          "status": "PASS",
+          "reason": "HTTP 200",
+          "details": {}
+        },
+        {
+          "category": "API",
           "name": "Product recommend (Internal)",
           "status": "PASS",
           "reason": "HTTP 200",
@@ -255,44 +262,44 @@
     {
       "category": "Business Validation",
       "status": "PASS",
-      "passed": 4,
+      "passed": 5,
       "failed": 0,
       "warned": 0,
-      "skipped": 1,
+      "skipped": 0,
       "checks": [
         {
           "category": "Business Validation",
           "name": "Repayment prediction (Internal)",
           "status": "PASS",
-          "reason": "capacity=Medium, confidence=0.415",
+          "reason": "capacity=Medium, confidence=0.9999990509528299",
           "details": {}
         },
         {
           "category": "Business Validation",
           "name": "Repayment prediction (External)",
-          "status": "SKIP",
-          "reason": "No training dataset profile available",
+          "status": "PASS",
+          "reason": "capacity=Medium, confidence=0.549747060520987",
           "details": {}
         },
         {
           "category": "Business Validation",
           "name": "Product recommendation (Internal)",
           "status": "PASS",
-          "reason": "product=Education Loan, probability=22.0, eligible=False",
+          "reason": "product=Education Loan, probability=21.9, eligible=False",
           "details": {}
         },
         {
           "category": "Business Validation",
           "name": "Product recommendation (External)",
           "status": "PASS",
-          "reason": "product=Education Loan, probability=26.7, eligible=False",
+          "reason": "product=Education Loan, probability=24.9, eligible=False",
           "details": {}
         },
         {
           "category": "Business Validation",
           "name": "Conversion prediction",
           "status": "PASS",
-          "reason": "conversion_probability=36.89",
+          "reason": "conversion_probability=99.42",
           "details": {}
         }
       ]
@@ -354,27 +361,27 @@
           "category": "Data Integrity",
           "name": "Invalid EMI burden (> 100%)",
           "status": "FAIL",
-          "reason": "invalid_emi=95",
+          "reason": "invalid_emi=1000",
           "details": {
-            "invalid_emi": 95
+            "invalid_emi": 1000
           }
         },
         {
           "category": "Data Integrity",
           "name": "Invalid debt ratio (> 100%)",
           "status": "FAIL",
-          "reason": "invalid_debt_ratio=95",
+          "reason": "invalid_debt_ratio=1000",
           "details": {
-            "invalid_debt_ratio": 95
+            "invalid_debt_ratio": 1000
           }
         },
         {
           "category": "Data Integrity",
           "name": "Duplicate Customer360 per customer",
           "status": "FAIL",
-          "reason": "duplicate_customer360=95",
+          "reason": "duplicate_customer360=1000",
           "details": {
-            "duplicate_customer360": 95
+            "duplicate_customer360": 1000
           }
         },
         {
@@ -413,9 +420,9 @@
     },
     {
       "category": "Database",
-      "status": "FAIL",
-      "passed": 33,
-      "failed": 4,
+      "status": "PASS",
+      "passed": 37,
+      "failed": 0,
       "warned": 0,
       "skipped": 0,
       "checks": [
@@ -670,10 +677,10 @@
         {
           "category": "Database",
           "name": "Record count: customer_360_profile",
-          "status": "FAIL",
-          "reason": "count=95, expected=1000",
+          "status": "PASS",
+          "reason": "count=1000, expected=1000",
           "details": {
-            "actual": 95,
+            "actual": 1000,
             "expected": 1000,
             "operator": "eq"
           }
@@ -681,10 +688,10 @@
         {
           "category": "Database",
           "name": "Record count: feature_store",
-          "status": "FAIL",
-          "reason": "count=95, expected=1000",
+          "status": "PASS",
+          "reason": "count=1000, expected=1000",
           "details": {
-            "actual": 95,
+            "actual": 1000,
             "expected": 1000,
             "operator": "eq"
           }
@@ -703,10 +710,10 @@
         {
           "category": "Database",
           "name": "Record count: external_customer_profile",
-          "status": "FAIL",
-          "reason": "count=458, expected=1000",
+          "status": "PASS",
+          "reason": "count=1000, expected=1000",
           "details": {
-            "actual": 458,
+            "actual": 1000,
             "expected": 1000,
             "operator": "eq"
           }
@@ -714,10 +721,10 @@
         {
           "category": "Database",
           "name": "Record count: lead_feature_store",
-          "status": "FAIL",
-          "reason": "count=2, expected=1000",
+          "status": "PASS",
+          "reason": "count=1000, expected=1000",
           "details": {
-            "actual": 2,
+            "actual": 1000,
             "expected": 1000,
             "operator": "eq"
           }
@@ -726,9 +733,9 @@
           "category": "Database",
           "name": "Record count: training_dataset",
           "status": "PASS",
-          "reason": "count=20, expected>=1",
+          "reason": "count=2000, expected>=1",
           "details": {
-            "actual": 20,
+            "actual": 2000,
             "expected": 1,
             "operator": "gte"
           }
@@ -737,9 +744,9 @@
           "category": "Database",
           "name": "Record count: explainability_reports",
           "status": "PASS",
-          "reason": "count=50, expected>=0",
+          "reason": "count=55, expected>=0",
           "details": {
-            "actual": 50,
+            "actual": 55,
             "expected": 0,
             "operator": "gte"
           }
@@ -811,14 +818,14 @@
           "category": "Database",
           "name": "Behaviour summary (internal feature_store)",
           "status": "PASS",
-          "reason": "customers_with_behaviour_summary=95",
+          "reason": "customers_with_behaviour_summary=1000",
           "details": {}
         },
         {
           "category": "Database",
           "name": "Behaviour summary (lead_feature_store)",
           "status": "PASS",
-          "reason": "leads_with_behaviour_summary=2",
+          "reason": "leads_with_behaviour_summary=1000",
           "details": {}
         }
       ]
@@ -826,8 +833,8 @@
     {
       "category": "Database Consistency",
       "status": "FAIL",
-      "passed": 1,
-      "failed": 3,
+      "passed": 2,
+      "failed": 2,
       "warned": 0,
       "skipped": 0,
       "checks": [
@@ -835,21 +842,21 @@
           "category": "Database Consistency",
           "name": "Every Customer360 has Feature Store",
           "status": "FAIL",
-          "reason": "profiles_without_features=95",
+          "reason": "profiles_without_features=1000",
           "details": {}
         },
         {
           "category": "Database Consistency",
           "name": "Every External Profile has Lead Feature Store",
-          "status": "FAIL",
-          "reason": "profiles_without_lead_features=456",
+          "status": "PASS",
+          "reason": "profiles_without_lead_features=0",
           "details": {}
         },
         {
           "category": "Database Consistency",
           "name": "Training dataset references valid profiles",
           "status": "FAIL",
-          "reason": "orphan_internal=20, orphan_external=0",
+          "reason": "orphan_internal=1000, orphan_external=1000",
           "details": {}
         },
         {
@@ -894,13 +901,13 @@
           "category": "End to End Workflow",
           "name": "External lead end-to-end workflow",
           "status": "FAIL",
-          "reason": "stages_ok=['Import', 'Enrichment', 'Lead Analytics', 'Lead Feature Store', 'Training Dataset', 'Lead Conversion'], failed=['Enrichment', 'Lead Analytics', 'Lead Feature Store', 'Training Dataset']",
+          "reason": "stages_ok=['Import', 'Enrichment', 'Lead Analytics', 'Lead Feature Store', 'Training Dataset', 'Lead Conversion'], failed=['Enrichment', 'Lead Analytics', 'Lead Feature Store']",
           "details": {
             "Import": true,
             "Enrichment": false,
             "Lead Analytics": false,
             "Lead Feature Store": false,
-            "Training Dataset": false,
+            "Training Dataset": true,
             "Lead Conversion": true
           }
         }
@@ -908,24 +915,24 @@
     },
     {
       "category": "External Intelligence",
-      "status": "FAIL",
-      "passed": 0,
-      "failed": 5,
+      "status": "WARN",
+      "passed": 5,
+      "failed": 0,
       "warned": 2,
       "skipped": 0,
       "checks": [
         {
           "category": "External Intelligence",
           "name": "Lead enrichment coverage",
-          "status": "FAIL",
-          "reason": "profiles=458, leads=1000",
+          "status": "PASS",
+          "reason": "profiles=1000, leads=1000",
           "details": {}
         },
         {
           "category": "External Intelligence",
           "name": "Lead Analytics coverage",
-          "status": "FAIL",
-          "reason": "leads_with_stage=2/1000",
+          "status": "PASS",
+          "reason": "leads_with_stage=1000/1000",
           "details": {
             "source_module": "external_lead_analytics"
           }
@@ -933,8 +940,8 @@
         {
           "category": "External Intelligence",
           "name": "Lead Intelligence coverage",
-          "status": "FAIL",
-          "reason": "leads_with_stage=2/1000",
+          "status": "PASS",
+          "reason": "leads_with_stage=1000/1000",
           "details": {
             "source_module": "external_lead_intelligence"
           }
@@ -942,8 +949,8 @@
         {
           "category": "External Intelligence",
           "name": "Behaviour Summary coverage",
-          "status": "FAIL",
-          "reason": "leads_with_stage=2/1000",
+          "status": "PASS",
+          "reason": "leads_with_stage=1000/1000",
           "details": {
             "source_module": "behaviour_summary"
           }
@@ -959,14 +966,14 @@
           "category": "External Intelligence",
           "name": "Lead status INTELLIGENCE_VALIDATED",
           "status": "WARN",
-          "reason": "intelligence_validated=2/1000",
+          "reason": "intelligence_validated=0/1000",
           "details": {}
         },
         {
           "category": "External Intelligence",
           "name": "Lead Feature Store coverage",
-          "status": "FAIL",
-          "reason": "leads_in_feature_store=2/1000",
+          "status": "PASS",
+          "reason": "leads_in_feature_store=1000/1000",
           "details": {}
         }
       ]
@@ -974,30 +981,30 @@
     {
       "category": "Internal Intelligence",
       "status": "FAIL",
-      "passed": 0,
-      "failed": 9,
+      "passed": 8,
+      "failed": 1,
       "warned": 0,
       "skipped": 0,
       "checks": [
         {
           "category": "Internal Intelligence",
           "name": "Customer360 coverage",
-          "status": "FAIL",
-          "reason": "profiles=95, customers=1000",
+          "status": "PASS",
+          "reason": "profiles=1000, customers=1000",
           "details": {}
         },
         {
           "category": "Internal Intelligence",
           "name": "Financial Analytics coverage",
-          "status": "FAIL",
-          "reason": "profiles_with_financial_kpis=95/1000",
+          "status": "PASS",
+          "reason": "profiles_with_financial_kpis=1000/1000",
           "details": {}
         },
         {
           "category": "Internal Intelligence",
           "name": "Transaction Analytics coverage",
-          "status": "FAIL",
-          "reason": "customers_with_stage=95/1000",
+          "status": "PASS",
+          "reason": "customers_with_stage=1000/1000",
           "details": {
             "source_module": "transaction_analytics"
           }
@@ -1005,8 +1012,8 @@
         {
           "category": "Internal Intelligence",
           "name": "Behaviour Analytics coverage",
-          "status": "FAIL",
-          "reason": "customers_with_stage=95/1000",
+          "status": "PASS",
+          "reason": "customers_with_stage=1000/1000",
           "details": {
             "source_module": "behaviour_analytics"
           }
@@ -1014,8 +1021,8 @@
         {
           "category": "Internal Intelligence",
           "name": "Relationship Analytics coverage",
-          "status": "FAIL",
-          "reason": "customers_with_stage=95/1000",
+          "status": "PASS",
+          "reason": "customers_with_stage=1000/1000",
           "details": {
             "source_module": "relationship_analytics"
           }
@@ -1023,8 +1030,8 @@
         {
           "category": "Internal Intelligence",
           "name": "Digital & Channel Analytics coverage",
-          "status": "FAIL",
-          "reason": "customers_with_stage=95/1000",
+          "status": "PASS",
+          "reason": "customers_with_stage=1000/1000",
           "details": {
             "source_module": "digital_channel_analytics"
           }
@@ -1032,8 +1039,8 @@
         {
           "category": "Internal Intelligence",
           "name": "Customer Health Analytics coverage",
-          "status": "FAIL",
-          "reason": "customers_with_stage=95/1000",
+          "status": "PASS",
+          "reason": "customers_with_stage=1000/1000",
           "details": {
             "source_module": "customer_health_analytics"
           }
@@ -1041,8 +1048,8 @@
         {
           "category": "Internal Intelligence",
           "name": "Feature Store coverage",
-          "status": "FAIL",
-          "reason": "customers_with_stage=95/1000",
+          "status": "PASS",
+          "reason": "customers_with_stage=1000/1000",
           "details": {
             "source_module": "internal_pipeline"
           }
@@ -1051,16 +1058,16 @@
           "category": "Internal Intelligence",
           "name": "Pipeline completion markers",
           "status": "FAIL",
-          "reason": "pipeline_completed=91/1000",
+          "reason": "pipeline_completed=994/1000",
           "details": {}
         }
       ]
     },
     {
       "category": "Machine Learning",
-      "status": "FAIL",
-      "passed": 11,
-      "failed": 1,
+      "status": "WARN",
+      "passed": 12,
+      "failed": 0,
       "warned": 1,
       "skipped": 0,
       "checks": [
@@ -1068,14 +1075,14 @@
           "category": "Machine Learning",
           "name": "Training dataset populated",
           "status": "PASS",
-          "reason": "records=20 (internal=20, external=0)",
+          "reason": "records=2000 (internal=1000, external=1000)",
           "details": {}
         },
         {
           "category": "Machine Learning",
           "name": "Training dataset has internal and external records",
-          "status": "FAIL",
-          "reason": "internal=20, external=0",
+          "status": "PASS",
+          "reason": "internal=1000, external=1000",
           "details": {}
         },
         {
@@ -1096,7 +1103,7 @@
           "category": "Machine Learning",
           "name": "Training dataset feature completeness",
           "status": "WARN",
-          "reason": "rows_missing_all_core_scores=20",
+          "reason": "rows_missing_all_core_scores=2000",
           "details": {}
         },
         {
@@ -1117,7 +1124,7 @@
           "category": "Machine Learning",
           "name": "Repayment Capacity Model feature importance valid JSON",
           "status": "PASS",
-          "reason": "keys=15",
+          "reason": "keys=43",
           "details": {}
         },
         {
@@ -1158,5 +1165,5 @@
       ]
     }
   ],
-  "total_checks": 121
+  "total_checks": 122
 }

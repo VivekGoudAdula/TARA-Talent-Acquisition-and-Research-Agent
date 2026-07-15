@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, User, DollarSign, Activity, Heart, RefreshCw, FileText, CheckCircle } from 'lucide-react';
 import SectionPanel, { FieldRow, ScoreBar } from '../components/ui/SectionPanel';
+import PageHeader from '../components/ui/PageHeader';
 import Badge from '../components/ui/Badge';
 import DataTable from '../components/ui/DataTable';
 import { PageSpinner, ErrorState } from '../components/ui/States';
@@ -390,16 +391,13 @@ export default function CustomerDetail() {
 
   return (
     <div className="space-y-6">
-      {/* Back Header */}
-      <div className="flex items-center gap-4">
-        <button className="btn-secondary btn-sm p-2 rounded-full" onClick={() => navigate(-1)}>
-          <ArrowLeft size={16} />
-        </button>
-        <div>
-          <h2 className="text-lg font-bold text-neutral-800">{name}</h2>
-          <p className="text-xs text-neutral-500">{isExternal ? 'Enriched External Lead' : 'Unified SBI Customer Profile'}</p>
-        </div>
-      </div>
+      <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)}>
+        <ArrowLeft size={14} /> Back
+      </button>
+      <PageHeader
+        title={name}
+        subtitle={isExternal ? 'Enriched External Lead' : 'Unified SBI Customer Profile'}
+      />
 
       {/* Tabs */}
       <div className="flex border-b border-neutral-200">

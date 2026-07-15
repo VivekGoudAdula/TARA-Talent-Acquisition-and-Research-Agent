@@ -6,14 +6,15 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+_BACKEND_ENV = _BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
     """Central application settings."""
 
     model_config = SettingsConfigDict(
-        env_file=str(_ENV_FILE),
+        env_file=str(_BACKEND_ENV),
         env_file_encoding="utf-8",
         extra="ignore",
         populate_by_name=True,
@@ -105,6 +106,16 @@ class Settings(BaseSettings):
         default="",
         alias="ENGAGEMENT_CALLBACK_URL",
         description="Callback CTA link in email/SMS. Falls back to tel: ENGAGEMENT_CALLBACK_PHONE",
+    )
+    engagement_api_base_url: str = Field(
+        default="http://localhost:8000",
+        alias="ENGAGEMENT_API_BASE_URL",
+        description="Public Tara API base URL for email/WhatsApp callback CTAs (use ngrok URL, not localhost)",
+    )
+    engagement_use_lan_ip: bool = Field(
+        default=True,
+        alias="ENGAGEMENT_USE_LAN_IP",
+        description="When API base is localhost, use LAN IP in email callback links (same WiFi mobile testing)",
     )
     engagement_callback_phone: str = Field(
         default="+911800209435",

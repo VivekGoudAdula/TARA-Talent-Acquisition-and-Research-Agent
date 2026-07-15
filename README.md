@@ -67,7 +67,7 @@ Here is the end-to-end architecture and solution flow of the Tara platform:
 4. Create a `.env` file in the `backend` folder based on `.env.example` and add your database and API keys.
 5. Start the server:
    ```bash
-   uvicorn app.main:app --reload
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
    *The backend will be running at `http://localhost:8000`.*
 
@@ -80,7 +80,8 @@ Here is the end-to-end architecture and solution flow of the Tara platform:
    ```bash
    npm install
    ```
-3. Start the development server:
+3. Copy `.env.example` to `.env` in the `frontend` folder and set `VITE_API_BASE_URL` if needed.
+4. Start the development server:
    ```bash
    npm run dev
    ```

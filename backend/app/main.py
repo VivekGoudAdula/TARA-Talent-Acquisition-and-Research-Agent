@@ -76,6 +76,34 @@ async def lifespan(app: FastAPI):
         except Exception as exc:
             logger.warning("Learning scheduler failed to start: %s", exc)
     logger.info("Customer360 Intelligence Engine started — MongoDB ready")
+    sid = (settings.twilio_account_sid or "").strip()
+    if sid:
+        logger.info("Twilio account SID: %s…%s", sid[:4], sid[-4:] if len(sid) > 8 else sid)
+    else:
+        logger.warning("TWILIO_ACCOUNT_SID not set — voice callbacks will fail")
+    try:
+        from app.engagement.callback_links import resolve_public_api_base
+
+        callback_base = resolve_public_api_base(settings)
+        if "localhost" in callback_base or "127.0.0.1" in callback_base:
+            logger.warning(
+                "Email callback links use %s — mobile email will FAIL. "
+                "Set ENGAGEMENT_API_BASE_URL to ngrok/public URL.",
+                callback_base,
+            )
+        else:
+            logger.info("Email callback CTA base URL: %s", callback_base)
+            if "192.168." in callback_base or "10." in callback_base:
+                logger.warning(
+                    "Mobile email on cellular data cannot reach LAN IP. "
+                    "Use ngrok: ENGAGEMENT_API_BASE_URL=https://xxx.ngrok-free.app"
+                )
+            logger.warning(
+                "For phone callback links, start backend with: "
+                "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+            )
+    except Exception:
+        pass
     yield
     if scheduler:
         scheduler.shutdown(wait=False)

@@ -404,6 +404,35 @@ def adapt_external_intelligence(data: dict[str, Any], lead: dict[str, Any] | Non
     }
 
 
+def is_regression_test_metrics(test_metrics: dict[str, Any]) -> bool:
+    """True when metrics look like a regression model (MAE/R²), not classification."""
+    if not test_metrics:
+        return False
+    if test_metrics.get("accuracy") is not None or test_metrics.get("f1_macro") is not None:
+        return False
+    return test_metrics.get("r2") is not None or test_metrics.get("mae") is not None
+
+
+def regression_metrics_for_ui(test_metrics: dict[str, Any]) -> dict[str, Any]:
+    """Expose regression metrics for UI (target scale 0–100 percentage points)."""
+    return {
+        "model_type": "regression",
+        "mae": float(test_metrics.get("mae", 0)),
+        "rmse": float(test_metrics.get("rmse", 0)),
+        "r2": float(test_metrics.get("r2", 0)),
+    }
+
+
+def classification_metrics_for_ui(test_metrics: dict[str, Any]) -> dict[str, Any]:
+    """Expose classification metrics for UI."""
+    return {
+        "model_type": "classification",
+        "accuracy": test_metrics.get("accuracy"),
+        "f1": test_metrics.get("f1_macro") or test_metrics.get("f1"),
+        "roc_auc": test_metrics.get("roc_auc"),
+    }
+
+
 def model_info_from_db_run(run: dict[str, Any]) -> dict[str, Any]:
     test_metrics = run.get("test_metrics") or {}
     if isinstance(test_metrics, str):
@@ -411,15 +440,10 @@ def model_info_from_db_run(run: dict[str, Any]) -> dict[str, Any]:
             test_metrics = json.loads(test_metrics)
         except json.JSONDecodeError:
             test_metrics = {}
-    accuracy = test_metrics.get("accuracy")
-    f1 = test_metrics.get("f1_macro") or test_metrics.get("f1")
-    roc_auc = test_metrics.get("roc_auc")
-    if accuracy is None and test_metrics.get("r2") is not None:
-        r2 = float(test_metrics["r2"])
-        mae = float(test_metrics.get("mae", 0.05))
-        accuracy = max(0.0, min(1.0, 1.0 - mae))
-        f1 = max(0.0, min(1.0, r2))
-        roc_auc = max(0.0, min(1.0, r2 + 0.05))
+    if is_regression_test_metrics(test_metrics):
+        ui_metrics = regression_metrics_for_ui(test_metrics)
+    else:
+        ui_metrics = classification_metrics_for_ui(test_metrics)
     created = run.get("created_at")
     feature_importance = run.get("feature_importance") or {}
     if not feature_importance:
@@ -440,10 +464,6 @@ def model_info_from_db_run(run: dict[str, Any]) -> dict[str, Any]:
         "last_trained": created.isoformat() if isinstance(created, datetime) else created,
         "train_samples": run.get("train_size") or run.get("records_used") or 0,
         "test_samples": run.get("test_size") or 0,
-        "metrics": {
-            "accuracy": accuracy,
-            "f1": f1,
-            "roc_auc": roc_auc,
-        },
+        "metrics": ui_metrics,
         "feature_importance": feature_importance,
     }

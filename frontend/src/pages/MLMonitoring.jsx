@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import SectionPanel from '../components/ui/SectionPanel';
 import Badge from '../components/ui/Badge';
 import { PageSpinner, ErrorState } from '../components/ui/States';
+import PageHeader from '../components/ui/PageHeader';
 import { useRepaymentModelInfo, useProductRecommendationInfo, useConversionModelInfo } from '../api/hooks';
 import api from '../api/client';
 import { mergeMlModelInfo } from '../api/dummyData';
@@ -29,6 +30,67 @@ function buildFeatureImportanceChartData(importance) {
     .map(([name, weight]) => ({ name, weight }))
     .sort((a, b) => b.weight - a.weight)
     .slice(0, 5);
+}
+
+function ModelPerformanceMetrics({ metrics }) {
+  const isRegression = metrics?.model_type === 'regression';
+
+  if (isRegression) {
+    return (
+      <div>
+        <h4 className="text-xs font-semibold text-neutral-500 uppercase mb-3">Model Performance (Regression)</h4>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="border border-neutral-100 rounded p-2">
+            <div className="text-xs text-neutral-500">MAE</div>
+            <div className="text-sm font-bold text-neutral-800">
+              {metrics.mae != null ? `${Number(metrics.mae).toFixed(2)} pts` : '—'}
+            </div>
+          </div>
+          <div className="border border-neutral-100 rounded p-2">
+            <div className="text-xs text-neutral-500">RMSE</div>
+            <div className="text-sm font-bold text-neutral-800">
+              {metrics.rmse != null ? `${Number(metrics.rmse).toFixed(2)} pts` : '—'}
+            </div>
+          </div>
+          <div className="border border-neutral-100 rounded p-2">
+            <div className="text-xs text-neutral-500">R²</div>
+            <div className="text-sm font-bold text-neutral-800">
+              {metrics.r2 != null ? Number(metrics.r2).toFixed(3) : '—'}
+            </div>
+          </div>
+        </div>
+        <p className="text-[10px] text-neutral-400 mt-2">
+          Predicts conversion probability (0–100%). Lower MAE/RMSE is better; R² closer to 1 is better.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h4 className="text-xs font-semibold text-neutral-500 uppercase mb-3">Model Accuracy & Performance</h4>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="border border-neutral-100 rounded p-2">
+          <div className="text-xs text-neutral-500">Accuracy</div>
+          <div className="text-sm font-bold text-neutral-800">
+            {metrics.accuracy != null ? `${(metrics.accuracy * 100).toFixed(1)}%` : '—'}
+          </div>
+        </div>
+        <div className="border border-neutral-100 rounded p-2">
+          <div className="text-xs text-neutral-500">F1 Score</div>
+          <div className="text-sm font-bold text-neutral-800">
+            {metrics.f1 != null ? `${(metrics.f1 * 100).toFixed(1)}%` : '—'}
+          </div>
+        </div>
+        <div className="border border-neutral-100 rounded p-2">
+          <div className="text-xs text-neutral-500">ROC-AUC</div>
+          <div className="text-sm font-bold text-neutral-800">
+            {metrics.roc_auc != null ? `${(metrics.roc_auc * 100).toFixed(1)}%` : '—'}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function FeatureImportanceChart({ importance }) {
@@ -129,6 +191,11 @@ export default function MLMonitoring() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="ML Monitoring"
+        subtitle="Model health, training controls, and performance metrics."
+      />
+
       {(trainMessage || trainError) && (
         <div className={`card p-3 text-sm ${trainError ? 'text-red-700 bg-red-50 border-red-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'}`}>
           {trainError || trainMessage}
@@ -153,14 +220,7 @@ export default function MLMonitoring() {
                     <div className="flex justify-between"><span className="text-neutral-500">Train Samples:</span><span className="font-medium">{m.train_samples}</span></div>
                     <div className="flex justify-between"><span className="text-neutral-500">Test Samples:</span><span className="font-medium">{m.test_samples}</span></div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    {['accuracy', 'f1', 'roc_auc'].map(k => (
-                      <div key={k} className="border border-neutral-100 rounded p-2">
-                        <div className="text-xs text-neutral-500 capitalize">{k.replace('_', '-')}</div>
-                        <div className="text-sm font-bold">{(metrics[k] * 100).toFixed(1)}%</div>
-                      </div>
-                    ))}
-                  </div>
+                  <ModelPerformanceMetrics metrics={metrics} />
                   <FeatureImportanceChart importance={m.feature_importance} />
                 </div>
               </SectionPanel>
@@ -202,24 +262,7 @@ export default function MLMonitoring() {
                   <div className="flex justify-between"><span className="text-neutral-500">Test Samples:</span><span className="font-medium">{m.test_samples || 0}</span></div>
                 </div>
 
-                {/* Performance Metrics */}
-                <div>
-                  <h4 className="text-xs font-semibold text-neutral-500 uppercase mb-3">Model Accuracy & Performance</h4>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="border border-neutral-100 rounded p-2">
-                      <div className="text-xs text-neutral-500">Accuracy</div>
-                      <div className="text-sm font-bold text-neutral-800">{metrics.accuracy != null ? `${(metrics.accuracy * 100).toFixed(1)}%` : '—'}</div>
-                    </div>
-                    <div className="border border-neutral-100 rounded p-2">
-                      <div className="text-xs text-neutral-500">F1 Score</div>
-                      <div className="text-sm font-bold text-neutral-800">{metrics.f1 != null ? `${(metrics.f1 * 100).toFixed(1)}%` : '—'}</div>
-                    </div>
-                    <div className="border border-neutral-100 rounded p-2">
-                      <div className="text-xs text-neutral-500">ROC-AUC</div>
-                      <div className="text-sm font-bold text-neutral-800">{metrics.roc_auc != null ? `${(metrics.roc_auc * 100).toFixed(1)}%` : '—'}</div>
-                    </div>
-                  </div>
-                </div>
+                <ModelPerformanceMetrics metrics={metrics} />
 
                 <FeatureImportanceChart importance={m.feature_importance} />
               </div>

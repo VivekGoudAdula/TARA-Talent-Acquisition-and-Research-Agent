@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from app.api.ui_adapters import is_regression_test_metrics, regression_metrics_for_ui
 from app.ml.conversion.service import lead_priority, marketing_priority
 from app.ml.conversion.training import (
     ConversionModelRegistry,
@@ -14,6 +15,19 @@ from app.ml.conversion.training import (
     evaluate_regression,
     label_conversion_probability,
 )
+
+
+class ConversionRegressionMetricsTests(unittest.TestCase):
+    def test_regression_metrics_for_ui(self) -> None:
+        ui = regression_metrics_for_ui({"mae": 0.44, "rmse": 0.94, "r2": 0.996})
+        self.assertEqual(ui["model_type"], "regression")
+        self.assertAlmostEqual(ui["mae"], 0.44)
+        self.assertAlmostEqual(ui["rmse"], 0.94)
+        self.assertAlmostEqual(ui["r2"], 0.996)
+
+    def test_is_regression_test_metrics(self) -> None:
+        self.assertTrue(is_regression_test_metrics({"mae": 0.5, "r2": 0.9}))
+        self.assertFalse(is_regression_test_metrics({"accuracy": 0.9, "f1_macro": 0.85}))
 
 
 class ConversionLabelingTests(unittest.TestCase):

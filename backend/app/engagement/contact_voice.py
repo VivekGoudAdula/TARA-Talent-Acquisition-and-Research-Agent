@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
+from app.engagement.callback_orchestrator import CallbackOrchestrator
 from app.engagement.export_service import EngagementExportService
-from app.engagement.voice_bridge import VoiceBridge, VoiceBridgeError
+from app.engagement.voice_bridge import VoiceBridge
 from app.onboarding.response_parser import is_contact_intent
 from app.schemas.engagement import EngagementLeadRecord
 from app.schemas.onboarding import LeadResponseCaptureRequest
@@ -13,14 +12,12 @@ from app.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-_DEDUP_MINUTES = 3
-
 
 class ContactVoiceTrigger:
     def __init__(self, db, voice_bridge: VoiceBridge | None = None) -> None:
         self._db = db
         self._export = EngagementExportService(db)
-        self._voice = voice_bridge or VoiceBridge()
+        self._orchestrator = CallbackOrchestrator(db, voice_bridge=voice_bridge)
 
     def maybe_trigger_from_response(
         self,
@@ -64,50 +61,38 @@ class ContactVoiceTrigger:
         if not phone:
             return {"triggered": False, "reason": "no_phone"}
 
-        if self._recent_callback(request.entity_id, phone):
-            return {"triggered": False, "reason": "dedup_recent"}
+        result = self._orchestrator.start_callback(
+            phone=phone,
+            entity_id=request.entity_id,
+            entity_type=request.entity_type,
+            name=request.name or rec.name,
+            source_channel=request.channel,
+        )
 
-        if not self._voice.is_configured:
-            return {"triggered": False, "reason": "voice_not_configured"}
-
-        try:
-            result = self._voice.initiate_call_by_phone(
-                phone=phone,
-                agent_id="lending_offer_agent",
-                entity_id=request.entity_id,
-                entity_type=request.entity_type,
-            )
-            self._mark_callback(request.entity_id, phone)
+        if result.triggered:
             logger.info(
-                "Contact voice triggered entity=%s phone=%s call_sid=%s",
+                "Contact voice triggered entity=%s phone=%s session=%s call_sid=%s",
                 request.entity_id,
                 phone,
-                result.get("call_sid"),
+                result.session_id,
+                result.call_sid,
             )
-            return {"triggered": True, "call": result}
-        except VoiceBridgeError as exc:
-            logger.warning("Contact voice trigger failed: %s", exc)
-            return {"triggered": False, "reason": str(exc)}
-
-    def _recent_callback(self, entity_id: str, phone: str) -> bool:
-        if getattr(self._voice._settings, "engagement_test_mode", False):
-            return False
-        digits = "".join(c for c in phone if c.isdigit())[-10:]
-        key = f"{entity_id}:{digits}"
-        cutoff = datetime.now(timezone.utc) - timedelta(minutes=_DEDUP_MINUTES)
-        return bool(
-            self._db.voice_callback_dedup.find_one(
-                {"dedup_key": key, "created_at": {"$gte": cutoff}}
-            )
-        )
-
-    def _mark_callback(self, entity_id: str, phone: str) -> None:
-        digits = "".join(c for c in phone if c.isdigit())[-10:]
-        self._db.voice_callback_dedup.insert_one(
-            {
-                "dedup_key": f"{entity_id}:{digits}",
-                "entity_id": entity_id,
-                "phone": digits,
-                "created_at": datetime.now(timezone.utc),
+            return {
+                "triggered": True,
+                "session_id": result.session_id,
+                "call": result.call,
+                "call_sid": result.call_sid,
+                "timing_ms": result.timing_ms,
+                "context": result.context.model_dump(),
             }
+
+        logger.warning(
+            "Contact voice trigger skipped entity=%s reason=%s",
+            request.entity_id,
+            result.reason,
         )
+        return {
+            "triggered": False,
+            "reason": result.reason,
+            "session_id": result.session_id,
+        }

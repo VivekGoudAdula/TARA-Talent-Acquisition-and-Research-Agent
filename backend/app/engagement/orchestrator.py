@@ -84,7 +84,7 @@ class EngagementOrchestrator:
     ) -> None:
         self._export = export_service
         self._repo = repository
-        self._personalize = personalize or PersonalizeService()
+        self._personalize = personalize or PersonalizeService(db=repository._db)
         self._voice = voice or VoiceChannel()
         self._sms = sms or SMSChannel()
         self._whatsapp = whatsapp or WhatsAppChannel()

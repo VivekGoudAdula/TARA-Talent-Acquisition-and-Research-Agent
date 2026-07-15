@@ -162,10 +162,16 @@ export const useExplainReport = (customerId) =>
 export const useChannelStatus = () =>
   useQuery({ queryKey: ['channel-status'], queryFn: () => api.get('/api/engagement/channels/status').then(r => r.data), staleTime: 15000 });
 
-export const useEngagementPreview = (limit = 50, profileTypes = 'External,Internal') =>
+export const useEngagementPreview = (limit = 20, profileTypes = 'External,Internal') =>
   useQuery({
     queryKey: ['engagement-preview', limit, profileTypes],
-    queryFn: () => api.get('/api/engagement/preview', { params: { limit, profile_types: profileTypes } }).then(r => r.data),
+    queryFn: () =>
+      api
+        .get('/api/engagement/preview', {
+          params: { limit, profile_types: profileTypes },
+          timeout: 60000,
+        })
+        .then(r => r.data),
     staleTime: 30000,
     retry: false,
   });

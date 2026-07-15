@@ -5,7 +5,7 @@ from datetime import datetime
 from app.db.mongo import get_database
 
 EMAIL = "krishnajai008@gmail.com"
-PHONE = "+918897371942"
+PHONE = "+919381118626"
 NOW = datetime.utcnow()
 
 PATCH = {"phone_number": PHONE, "email": EMAIL, "updated_at": NOW}

@@ -9,7 +9,7 @@ This is the backend component of the Tara application.
 
 ## Getting Started
 
-1. Copy `.env.example` to `.env` (or use the hard-linked `.env` at the root).
+1. Copy `.env.example` to `.env` in this `backend` folder and fill in your secrets locally.
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt

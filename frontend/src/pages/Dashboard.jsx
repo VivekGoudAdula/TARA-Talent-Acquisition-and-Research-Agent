@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, UserCheck, Target, Megaphone, Brain, TrendingUp, Phone, Activity, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import KpiCard from '../components/ui/KpiCard';
+import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import Badge from '../components/ui/Badge';
 import { PageSpinner, ErrorState } from '../components/ui/States';
@@ -94,6 +95,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Dashboard"
+        subtitle="Platform overview, data pipeline controls, and engagement channel health."
+      />
+
       {/* KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpis.map(k => <KpiCard key={k.label} {...k} />)}

@@ -33,11 +33,11 @@ class VoiceBridge:
     def is_configured(self) -> bool:
         return bool(self.base_url)
 
-    def health_check(self) -> dict[str, Any]:
+    def health_check(self, timeout: float = 1.0) -> dict[str, Any]:
         if not self.is_configured:
             return {"configured": False, "reachable": False, "detail": "VOICE_AGENT_BASE_URL not set"}
         try:
-            response = httpx.get(f"{self.base_url}/health", timeout=10.0)
+            response = httpx.get(f"{self.base_url}/health", timeout=timeout)
             return {
                 "configured": True,
                 "reachable": response.status_code == 200,
@@ -45,6 +45,9 @@ class VoiceBridge:
             }
         except Exception as exc:
             return {"configured": True, "reachable": False, "detail": str(exc)}
+
+    def is_reachable(self, timeout: float = 0.8) -> bool:
+        return bool(self.health_check(timeout=timeout).get("reachable"))
 
     def create_campaign(self, name: str, agent_id: str, description: str = "") -> dict[str, Any]:
         payload = {
@@ -83,6 +86,67 @@ class VoiceBridge:
         if entity_type:
             payload["entity_type"] = entity_type
         return self._post_json("/calls/initiate-by-phone", payload)
+
+    def create_session(
+        self,
+        *,
+        session_id: str,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Register callback session with voice platform (optional external step)."""
+        if not self.is_configured:
+            return {"session_id": session_id, "external": False}
+        try:
+            result = self._post_json(
+                "/sessions/create",
+                {"session_id": session_id, "context": context, "intent": "callback"},
+                timeout=1.5,
+            )
+            result.setdefault("session_id", session_id)
+            return result
+        except VoiceBridgeError:
+            return {"session_id": session_id, "external": False}
+
+    def load_context(
+        self,
+        *,
+        session_id: str,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Push context to voice platform (optional external step)."""
+        if not self.is_configured:
+            return {"loaded": True, "session_id": session_id}
+        try:
+            return self._post_json(
+                f"/sessions/{session_id}/context",
+                {"context": context},
+                timeout=1.5,
+            )
+        except VoiceBridgeError:
+            return {"loaded": True, "session_id": session_id, "local_only": True}
+
+    def initiate_callback_call(
+        self,
+        *,
+        phone: str,
+        session_id: str,
+        context: dict[str, Any],
+        agent_id: str | None = None,
+        timeout: float | None = None,
+    ) -> dict[str, Any]:
+        """Place outbound callback call with full agent context embedded."""
+        resolved_agent = agent_id or self._settings.voice_agent_default_agent_id
+        payload: dict[str, Any] = {
+            "phone": phone,
+            "agent_id": resolved_agent,
+            "session_id": session_id,
+            "intent": context.get("intent", "callback"),
+            "entity_id": context.get("customer_id"),
+            "entity_type": context.get("entity_type", "External"),
+            "context": context,
+        }
+        call_timeout = timeout if timeout is not None else min(self._timeout, 2.0)
+        return self._post_json("/calls/initiate-by-phone", payload, timeout=call_timeout)
 
     def push_campaign(
         self,
@@ -125,10 +189,17 @@ class VoiceBridge:
             "dialer_result": dialer_result,
         }
 
-    def _post_json(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def _post_json(
+        self,
+        path: str,
+        payload: dict[str, Any],
+        *,
+        timeout: float | None = None,
+    ) -> dict[str, Any]:
         url = f"{self.base_url}{path}"
+        request_timeout = timeout if timeout is not None else self._timeout
         try:
-            response = httpx.post(url, json=payload, timeout=self._timeout)
+            response = httpx.post(url, json=payload, timeout=request_timeout)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:

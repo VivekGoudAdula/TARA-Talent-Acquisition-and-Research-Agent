@@ -201,6 +201,7 @@ class ConversationService:
         entity_id: str | None = None,
         entity_type: str | None = None,
         provider_sid: str | None = None,
+        session_id: str | None = None,
     ) -> dict[str, Any]:
         """Record a customer message + optional agent reply (e.g. from bank WhatsApp webhook)."""
         eid, etype = self.resolve_entity(
@@ -219,6 +220,7 @@ class ConversationService:
             body=customer_body,
             response_type=response_type,
             provider_sid=provider_sid,
+            metadata={"session_id": session_id} if session_id else None,
         )
         broadcast_event("conversation_message", _serialize_doc(inbound_doc))
         outbound_payload = None
@@ -230,7 +232,7 @@ class ConversationService:
                 direction="outbound",
                 role="agent",
                 body=agent_body,
-                metadata={"synced_from_bank": True},
+                metadata={"synced_from_bank": True, **({"session_id": session_id} if session_id else {})},
             )
             outbound_payload = _serialize_doc(outbound_doc)
             broadcast_event("conversation_message", outbound_payload)

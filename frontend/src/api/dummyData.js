@@ -1,4 +1,4 @@
-/** Demo / fallback data when API responses are empty or incomplete. */
+﻿/** Demo / fallback data when API responses are empty or incomplete. */
 
 const now = () => new Date().toISOString();
 
@@ -83,7 +83,7 @@ export const DUMMY_ML_MODELS = {
     last_trained: now(),
     train_samples: 500,
     test_samples: 100,
-    metrics: { accuracy: 0.82, f1: 0.78, roc_auc: 0.85 },
+    metrics: { model_type: 'regression', mae: 4.2, rmse: 6.1, r2: 0.82 },
     feature_importance: {
       consent: 0.24,
       lead_quality_score: 0.20,
@@ -97,6 +97,7 @@ export const DUMMY_ML_MODELS = {
 
 export function mergeMlModelInfo(apiData, dummyKey) {
   if (!apiData) {
+    const fallback = DUMMY_ML_MODELS[dummyKey];
     return {
       trained: false,
       algorithm: 'None',
@@ -104,7 +105,7 @@ export function mergeMlModelInfo(apiData, dummyKey) {
       last_trained: null,
       train_samples: 0,
       test_samples: 0,
-      metrics: { accuracy: 0, f1: 0, roc_auc: 0 },
+      metrics: fallback?.metrics || { model_type: 'classification', accuracy: 0, f1: 0, roc_auc: 0 },
       feature_importance: {},
     };
   }
@@ -120,6 +121,9 @@ export function mergeMlModelInfo(apiData, dummyKey) {
     importance[normalized] = v;
   });
 
+  const rawMetrics = apiData.metrics || {};
+  const isRegression = rawMetrics.model_type === 'regression' || dummyKey === 'conversion';
+
   return {
     trained: apiData.trained ?? false,
     algorithm: apiData.algorithm || 'Unknown',
@@ -127,11 +131,19 @@ export function mergeMlModelInfo(apiData, dummyKey) {
     last_trained: apiData.last_trained || null,
     train_samples: apiData.train_samples || 0,
     test_samples: apiData.test_samples || 0,
-    metrics: {
-      accuracy: apiData.metrics?.accuracy || 0,
-      f1: apiData.metrics?.f1 || 0,
-      roc_auc: apiData.metrics?.roc_auc || 0,
-    },
+    metrics: isRegression
+      ? {
+          model_type: 'regression',
+          mae: rawMetrics.mae ?? 0,
+          rmse: rawMetrics.rmse ?? 0,
+          r2: rawMetrics.r2 ?? 0,
+        }
+      : {
+          model_type: 'classification',
+          accuracy: rawMetrics.accuracy ?? 0,
+          f1: rawMetrics.f1 ?? 0,
+          roc_auc: rawMetrics.roc_auc ?? 0,
+        },
     feature_importance: importance,
   };
 }
@@ -285,6 +297,62 @@ export function mergeEngagementChannels(apiData) {
 
 export function mergeEngagementLeads(apiLeads) {
   return Array.isArray(apiLeads) ? apiLeads : [];
+}
+
+/** Pinned Voice Console demo contact — Twilio dials this number on Call. */
+export const VOICE_CONSOLE_DEMO_LEAD = {
+  lead_id: 'voice-demo-vivek-goud',
+  full_name: 'Vivek Goud',
+  phone_number: '+919381118626',
+  email: 'vivek.goud@example.com',
+  profile_type: 'External',
+  conversion_probability: 1.0,
+  recommended_product: 'Personal Loan',
+  repayment_capacity: 'High',
+};
+
+const _OLD_VOICE_DEMO_DIGITS = ['8897371942', '9192973672'];
+
+function _isVivekJainLead(lead) {
+  const name = (lead.full_name || lead.name || '').toLowerCase();
+  return name.includes('vivek') && name.includes('jain');
+}
+
+function _shouldReplaceWithVoiceDemo(lead) {
+  if (_isVivekJainLead(lead)) return true;
+  const digits = String(lead.phone_number || lead.phone || '').replace(/\D/g, '');
+  if (_OLD_VOICE_DEMO_DIGITS.some((s) => digits.endsWith(s))) return true;
+  return nameIncludesVivek(lead);
+}
+
+function nameIncludesVivek(lead) {
+  return (lead.full_name || lead.name || '').toLowerCase().includes('vivek');
+}
+
+export function mergeVoiceDialerLeads(apiLeads) {
+  const leads = Array.isArray(apiLeads) ? [...apiLeads] : [];
+
+  const mapped = leads.map((lead) => {
+    if (!_shouldReplaceWithVoiceDemo(lead)) return lead;
+    return {
+      ...lead,
+      ...VOICE_CONSOLE_DEMO_LEAD,
+      lead_id: lead.lead_id || lead.entity_id || VOICE_CONSOLE_DEMO_LEAD.lead_id,
+      entity_id: lead.entity_id || lead.lead_id || VOICE_CONSOLE_DEMO_LEAD.lead_id,
+    };
+  });
+
+  const hasVivekGoud = mapped.some(
+    (l) =>
+      (l.full_name || '').toLowerCase().includes('vivek goud')
+      || String(l.phone_number || '').replace(/\D/g, '').endsWith('9381118626'),
+  );
+
+  const withPinned = hasVivekGoud ? mapped : [VOICE_CONSOLE_DEMO_LEAD, ...mapped];
+
+  const pinned = withPinned.filter((l) => (l.full_name || '').toLowerCase().includes('vivek goud'));
+  const rest = withPinned.filter((l) => !(l.full_name || '').toLowerCase().includes('vivek goud'));
+  return [...pinned, ...rest];
 }
 
 export function mergeHandoffQueue(apiHandoffs) {
@@ -451,10 +519,6 @@ export function simulateVoiceCall(lead, { onLine, onConnected, onComplete }) {
     cancelled = true;
     timers.forEach(clearTimeout);
   };
-}
-
-export function mergeVoiceDialerLeads(apiLeads) {
-  return mergeEngagementLeads(apiLeads);
 }
 
 const DEMO_STEP_MS = {
@@ -704,4 +768,65 @@ export function mergeBehaviourProfile(apiData, ctx = {}) {
 
 export function mergeRelationshipProfile(apiData, ctx = {}) {
   return _mergeProfile(apiData, buildDummyRelationshipProfile(ctx));
+}
+
+export const DUMMY_CAMPAIGNS = [
+  {
+    campaign_id: 'cmp-001',
+    name: 'Q3 Personal Loan Drive',
+    product: 'Personal Loan',
+    target_audience: 'High-income Metro Users',
+    channel: 'Email',
+    status: 'Active',
+    start_date: '2026-07-01',
+    end_date: '2026-07-31',
+    qualified_leads: 1250,
+    conversion_rate: 4.2,
+    assigned_leads: [
+      { id: 'lead-1', name: 'Priya Nair', status: 'Converted', contact: 'priya.nair@example.com', score: 85 },
+      { id: 'lead-2', name: 'Vikram Patel', status: 'Pending', contact: 'vikram.p@example.com', score: 72 },
+      { id: 'lead-3', name: 'Meera Krishnan', status: 'Contacted', contact: 'meera.k@example.com', score: 65 }
+    ]
+  },
+  {
+    campaign_id: 'cmp-002',
+    name: 'Gold Credit Card Upgrade',
+    product: 'Gold Credit Card',
+    target_audience: 'Existing Platinum Customers',
+    channel: 'SMS',
+    status: 'Scheduled',
+    start_date: '2026-08-01',
+    end_date: '2026-08-15',
+    qualified_leads: 840,
+    conversion_rate: 0.0,
+    assigned_leads: [
+      { id: 'lead-4', name: 'Rahul Sharma', status: 'Pending', contact: '9123456780', score: 91 },
+      { id: 'lead-5', name: 'Ananya Iyer', status: 'Pending', contact: '9988776655', score: 88 }
+    ]
+  },
+  {
+    campaign_id: 'cmp-003',
+    name: 'Digital Savings Promotion',
+    product: 'Digital Savings Account',
+    target_audience: 'Gen Z / Young Professionals',
+    channel: 'WhatsApp',
+    status: 'Completed',
+    start_date: '2026-06-01',
+    end_date: '2026-06-30',
+    qualified_leads: 3200,
+    conversion_rate: 6.8,
+    assigned_leads: [
+      { id: 'lead-6', name: 'Arjun Das', status: 'Converted', contact: '9876543210', score: 77 },
+      { id: 'lead-7', name: 'Sana Khan', status: 'Converted', contact: 'sana.k@example.com', score: 82 },
+      { id: 'lead-8', name: 'Rohan Gupta', status: 'Ignored', contact: '9012345678', score: 45 }
+    ]
+  }
+];
+
+export function getDummyCampaigns() {
+  return DUMMY_CAMPAIGNS;
+}
+
+export function getDummyCampaignById(id) {
+  return DUMMY_CAMPAIGNS.find(c => c.campaign_id === id);
 }

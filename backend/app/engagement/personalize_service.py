@@ -15,14 +15,12 @@ from string import Template
 
 
 from app.config import Settings, get_settings
-
 from app.engagement.banking_copy import (
     format_inr_amount,
     humanize_reasons,
     professional_insight,
     repayment_label,
 )
-
 from app.schemas.engagement import EngagementLeadRecord
 
 
@@ -57,11 +55,10 @@ class PersonalizeService:
 
     """Build channel-specific messages using professional banking language."""
 
-
-
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(self, settings: Settings | None = None, db=None) -> None:
 
         self._settings = settings or get_settings()
+        self._db = db
 
         self._html_template = self._load_template()
 
@@ -79,7 +76,7 @@ class PersonalizeService:
         offer_valid = self._settings.engagement_offer_valid_until
 
         apply_url = self._settings.engagement_email_cta_url
-        callback_url = f"http://localhost:8000/api/engagement/callback/trigger?phone={record.phone}&entity_id={record.entity_id}&entity_type={record.entity_type}"
+        callback_url = self._build_callback_url(record)
         ai_banker_url = f"tel:{self._settings.twilio_from_number}"
 
         callback_phone = self._format_callback_phone(self._settings.engagement_callback_phone)
@@ -154,6 +151,33 @@ class PersonalizeService:
             email_text=email_text,
             email_html=email_html,
             whatsapp_content_variables={"1": name, "2": product},
+        )
+
+    def _build_callback_url(self, record: EngagementLeadRecord) -> str:
+        if self._settings.engagement_callback_url and "{token}" not in self._settings.engagement_callback_url:
+            return self._settings.engagement_callback_url
+
+        if self._db is not None:
+            from app.engagement.callback_links import CallbackLinkService
+
+            return CallbackLinkService(self._db, self._settings).create_link(
+                phone=record.phone or "",
+                entity_id=record.entity_id,
+                entity_type=record.entity_type,
+                source_channel="Email",
+            )
+
+        from app.engagement.callback_links import resolve_public_api_base
+        from urllib.parse import quote
+
+        base = resolve_public_api_base(self._settings)
+        phone = quote(record.phone or "", safe="")
+        entity_id = quote(record.entity_id or "", safe="")
+        entity_type = quote(record.entity_type or "External", safe="")
+        return (
+            f"{base}/api/engagement/callback/trigger"
+            f"?phone={phone}&entity_id={entity_id}&entity_type={entity_type}"
+            f"&source_channel=Email"
         )
 
     def _format_callback_phone(self, phone: str) -> str:

@@ -7,9 +7,9 @@ from typing import Any
 from app.api.ui_adapters import adapt_pipeline_status, adapt_platform_counts, adapt_recent_lead_row
 from app.db.mongo import MongoDatabase
 
-DEMO_EMAIL = "krishnajai008@gmail.com"
-DEMO_PHONE = "+918897371942"
-DEMO_PHONE_DISPLAY = "8897371942"
+DEMO_EMAIL = "adulavivekgoud@gmail.com"
+DEMO_PHONE = "+919381118626"
+DEMO_PHONE_DISPLAY = "9381118626"
 _RECENT_LEAD_LIMIT = 20
 
 

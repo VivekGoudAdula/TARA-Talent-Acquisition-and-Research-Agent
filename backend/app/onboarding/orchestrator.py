@@ -110,15 +110,18 @@ class OnboardingOrchestrator:
         elif response_type == "no_answer":
             journey_status = "awaiting_contact"
             next_action = "retry_outreach"
-        elif response_type in ("interested", "callback_requested"):
-            if kyc_readiness == "Ready" or response_type == "callback_requested":
+        elif response_type == "callback_requested":
+            journey_status = "awaiting_contact"
+            next_action = "voice_callback_pending"
+        elif response_type == "interested":
+            if kyc_readiness == "Ready":
                 handoff_id = self._repo.create_handoff(
                     entity_id=request.entity_id,
                     entity_type=request.entity_type,
                     customer_name=record.name,
                     phone=record.phone,
                     product=product,
-                    priority="high" if response_type == "callback_requested" else "normal",
+                    priority="normal",
                     reason=self._handoff_reason(response_type, product),
                     source_channel=request.channel,
                     talking_points=record.talking_points,
@@ -126,7 +129,7 @@ class OnboardingOrchestrator:
                 )
                 journey_status = "handoff_pending"
                 next_action = "rm_handoff_created"
-                if not request.dry_run and response_type != "callback_requested":
+                if not request.dry_run:
                     nudge_sent, nudge_channel = self._send_rm_confirmation(record)
             else:
                 if not request.dry_run:

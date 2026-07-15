@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SectionPanel from '../components/ui/SectionPanel';
 import Badge from '../components/ui/Badge';
 import { PageSpinner, ErrorState } from '../components/ui/States';
+import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
 import { useChannelStatus, useEngagementPreview, useHandoffQueue } from '../api/hooks';
 import {
@@ -14,18 +15,20 @@ import { MessageSquare, Phone, Mail, MessageCircle, AlertTriangle, CheckCircle }
 
 export default function EngagementCenter() {
   const channels = useChannelStatus();
-  const preview = useEngagementPreview(50, 'External,Internal');
+  const preview = useEngagementPreview(20, 'External');
   const handoffs = useHandoffQueue();
   const [sending, setSending] = useState({});
   const [outcomeMsg, setOutcomeMsg] = useState(null);
 
-  if (channels.isLoading || preview.isLoading) return <PageSpinner />;
+  if (channels.isLoading) return <PageSpinner />;
   if (channels.isError) return <ErrorState message="Could not load engagement systems data" />;
 
   const ch = mergeEngagementChannels(channels.data);
-  const leads = preview.isError ? mergeEngagementLeads([]) : mergeEngagementLeads(preview.data);
+  const leads = preview.isError || !preview.data
+    ? mergeEngagementLeads([])
+    : mergeEngagementLeads(preview.data);
+  const usingDemoLeads = preview.isError || !preview.data;
   const handoffQueue = mergeHandoffQueue(handoffs.data);
-  const usingDemoLeads = false;
   const usingDemoHandoffs = false;
 
   const handleSend = async (lead, channel) => {
@@ -84,6 +87,11 @@ export default function EngagementCenter() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Engagement Center"
+        subtitle="Multi-channel outreach, lead preview, and officer handoff queue."
+      />
+
       {/* Toast outcomes */}
       {outcomeMsg && (
         <div className={`p-4 rounded-md flex items-center gap-2 ${outcomeMsg.type === 'success' ? 'bg-success-50 text-success-600' : 'bg-danger-50 text-danger-600'}`}>
@@ -130,8 +138,21 @@ export default function EngagementCenter() {
       </div>
 
       {/* Outreach Leads List */}
-      <SectionPanel title="Active Outreach Pre-Approved Queue" subtitle="Leads qualified for direct automated campaigns">
-        <DataTable columns={columns} data={leads} pageSize={10} />
+      <SectionPanel
+        title="Active Outreach Pre-Approved Queue"
+        subtitle={
+          preview.isLoading
+            ? 'Loading live leads from TARA…'
+            : usingDemoLeads
+              ? 'Showing demo leads — live preview unavailable or still loading'
+              : 'Leads qualified for direct automated campaigns'
+        }
+      >
+        {preview.isLoading ? (
+          <div className="py-10 text-center text-neutral-400 text-sm">Fetching engagement preview…</div>
+        ) : (
+          <DataTable columns={columns} data={leads} pageSize={10} />
+        )}
       </SectionPanel>
 
       {/* Handoff queue */}

@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SectionPanel, { FieldRow } from '../components/ui/SectionPanel';
 import Badge from '../components/ui/Badge';
-import { PageSpinner } from '../components/ui/States';
+import PageHeader from '../components/ui/PageHeader';
 import { useEngagementPreview } from '../api/hooks';
 import {
   mergeVoiceDialerLeads,
   simulateVoiceCall,
   getVoiceDemoOutcome,
 } from '../api/dummyData';
-import api from '../api/client';
-import { Phone, PhoneOff, Mic } from 'lucide-react';
+import api, { API_BASE_URL } from '../api/client';
+import { Phone, PhoneOff, Mic, AlertTriangle } from 'lucide-react';
 
-/** Set to false only when Twilio voice bridge is verified working. */
-const VOICE_DEMO_MODE = import.meta.env.VITE_VOICE_DEMO !== 'false';
+const VOICE_DEMO_MODE = false;
 
 export default function VoiceConsole() {
-  const preview = useEngagementPreview(20, 'External,Internal');
+  const preview = useEngagementPreview(15, 'External');
   const [activeCall, setActiveCall] = useState(null);
   const [callStatus, setCallStatus] = useState('idle'); // idle, dialing, connected, ended
   const [transcript, setTranscript] = useState([]);
   const [outcome, setOutcome] = useState(null);
+  const [callError, setCallError] = useState(null);
+  const [activeSessionId, setActiveSessionId] = useState(null);
   const simCleanupRef = useRef(null);
+  const callStartMsRef = useRef(null);
 
   useEffect(() => {
     return () => {
@@ -31,18 +33,25 @@ export default function VoiceConsole() {
   useEffect(() => {
     if (VOICE_DEMO_MODE || !activeCall || callStatus !== 'connected') return;
 
-    const eventSource = new EventSource('/api/engagement/conversations/stream');
+    const eventSource = new EventSource(`${API_BASE_URL}/api/engagement/conversations/stream`);
 
     eventSource.addEventListener('conversation_message', (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.entity_id === activeCall.lead_id && data.channel === 'Voice') {
-          setTranscript(prev => {
-            const exists = prev.some(m => m.text === data.body && m.sender === (data.role === 'agent' ? 'agent' : 'user'));
-            if (exists) return prev;
-            return [...prev, { sender: data.role === 'agent' ? 'agent' : 'user', text: data.body }];
-          });
-        }
+        if (data.entity_id !== activeCall.lead_id || data.channel !== 'Voice') return;
+
+        const sessionId = data.metadata?.session_id;
+        if (activeSessionId && sessionId && sessionId !== activeSessionId) return;
+
+        const createdMs = data.created_at ? new Date(data.created_at).getTime() : Date.now();
+        if (callStartMsRef.current && createdMs < callStartMsRef.current) return;
+
+        setTranscript(prev => {
+          const sender = data.role === 'agent' ? 'agent' : 'user';
+          const exists = prev.some(m => m.text === data.body && m.sender === sender);
+          if (exists) return prev;
+          return [...prev, { sender, text: data.body }];
+        });
       } catch (err) {
         console.error('SSE parse error', err);
       }
@@ -55,10 +64,11 @@ export default function VoiceConsole() {
     return () => {
       eventSource.close();
     };
-  }, [activeCall, callStatus]);
+  }, [activeCall, callStatus, activeSessionId]);
 
-  if (preview.isLoading) return <PageSpinner />;
-  const leads = mergeVoiceDialerLeads(preview.isError ? [] : preview.data);
+  const leads = mergeVoiceDialerLeads(
+    preview.isError || !preview.data ? [] : preview.data,
+  );
 
   const startDemoCall = (lead) => {
     simCleanupRef.current?.();
@@ -66,6 +76,7 @@ export default function VoiceConsole() {
     setCallStatus('dialing');
     setTranscript([]);
     setOutcome(null);
+    setCallError(null);
 
     simCleanupRef.current = simulateVoiceCall(lead, {
       onConnected: () => setCallStatus('connected'),
@@ -89,32 +100,40 @@ export default function VoiceConsole() {
     setCallStatus('dialing');
     setTranscript([]);
     setOutcome(null);
+    setCallError(null);
+    setActiveSessionId(null);
+    callStartMsRef.current = Date.now() - 2000;
 
     try {
-      const historyRes = await api.get(`/api/engagement/conversations/${lead.lead_id}`);
-      if (historyRes.data?.messages) {
-        const msgs = historyRes.data.messages.map(m => ({
-          sender: m.role === 'agent' ? 'agent' : 'user',
-          text: m.body,
-        }));
-        setTranscript(msgs);
-      }
-    } catch {
-      console.debug('No previous conversation thread found.');
-    }
-
-    try {
-      await api.get('/api/engagement/callback/trigger', {
-        params: {
-          phone: lead.phone_number,
-          entity_id: lead.lead_id,
-          entity_type: lead.profile_type || 'Internal',
-        },
+      const { data } = await api.post('/api/engagement/callback/start', {
+        phone: lead.phone_number,
+        entity_id: lead.lead_id,
+        entity_type: lead.profile_type || 'Internal',
+        name: lead.full_name || lead.name,
+        source_channel: 'VoiceConsole',
       });
-      setCallStatus('connected');
+      if (data?.triggered) {
+        setCallStatus('connected');
+        setActiveSessionId(data.session_id || null);
+        setTranscript([
+          {
+            sender: 'system',
+            text: `Calling ${lead.full_name || lead.name} — session ${data.session_id}`,
+          },
+        ]);
+      } else {
+        const reason = data?.message || data?.reason || 'Callback not started';
+        setCallStatus('idle');
+        setActiveCall(null);
+        setCallError(reason);
+        return;
+      }
     } catch (err) {
-      console.warn('Live voice call failed — falling back to demo simulation:', err);
-      startDemoCall(lead);
+      const msg = err?.response?.data?.detail || err?.message || 'Voice call failed';
+      console.warn('Live voice call failed:', err);
+      setCallStatus('idle');
+      setActiveCall(null);
+      setCallError(typeof msg === 'string' ? msg : JSON.stringify(msg));
     }
   };
 
@@ -161,13 +180,54 @@ export default function VoiceConsole() {
     setActiveCall(null);
     setTranscript([]);
     setOutcome(null);
+    setCallError(null);
+    setActiveSessionId(null);
+    callStartMsRef.current = null;
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-6">
+      <PageHeader
+        title="Voice Console"
+        subtitle="Outbound voice dialing, live session control, and call outcomes."
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {callError && (
+        <div className="md:col-span-3 p-4 rounded-md bg-danger-50 border border-danger-200 text-danger-700 text-sm flex items-start gap-2">
+          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Call could not be placed</p>
+            <p className="mt-1">{callError}</p>
+            {callError.toLowerCase().includes('verified') && (
+              <p className="mt-2 text-xs">
+                On a Twilio trial account, add <strong>+919381118626</strong> as a verified caller ID at{' '}
+                <a
+                  href="https://console.twilio.com/us1/develop/phone-numbers/manage/verified"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline"
+                >
+                  Twilio Verified Numbers
+                </a>
+                , then try again.
+              </p>
+            )}
+            <button type="button" className="mt-2 text-xs underline" onClick={() => setCallError(null)}>
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
       <SectionPanel
         title="Active Dialer Queue"
-        subtitle={VOICE_DEMO_MODE ? 'Demo mode — scripted voice conversations' : 'Trigger live voice outreach call'}
+        subtitle={
+          preview.isLoading
+            ? 'Loading leads…'
+            : VOICE_DEMO_MODE
+              ? 'Demo mode — scripted voice conversations'
+              : 'Trigger live voice outreach call'
+        }
       >
         {VOICE_DEMO_MODE && (
           <div className="mb-3 px-2.5 py-2 rounded bg-amber-50 border border-amber-100 text-xs text-amber-800">
@@ -175,7 +235,10 @@ export default function VoiceConsole() {
           </div>
         )}
         <div className="space-y-2 max-h-[500px] overflow-y-auto">
-          {leads.map((l) => (
+          {preview.isLoading ? (
+            <div className="py-8 text-center text-neutral-400 text-sm">Fetching dialer queue…</div>
+          ) : (
+          leads.map((l) => (
             <div key={l.lead_id} className="p-3 border border-neutral-100 bg-white rounded flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold text-neutral-800">{l.full_name}</div>
@@ -192,7 +255,7 @@ export default function VoiceConsole() {
                 <Phone size={14} />
               </button>
             </div>
-          ))}
+          )))}
         </div>
       </SectionPanel>
 

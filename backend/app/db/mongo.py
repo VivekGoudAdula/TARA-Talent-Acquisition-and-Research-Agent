@@ -164,6 +164,18 @@ class MongoDatabase:
         return self._db["email_cta_clicks"]
 
     @property
+    def callback_cta_tokens(self) -> Collection:
+        return self._db["callback_cta_tokens"]
+
+    @property
+    def voice_callback_sessions(self) -> Collection:
+        return self._db["voice_callback_sessions"]
+
+    @property
+    def voice_callback_dedup(self) -> Collection:
+        return self._db["voice_callback_dedup"]
+
+    @property
     def channel_messages(self) -> Collection:
         return self._db["channel_messages"]
 
@@ -247,6 +259,11 @@ INDEX_SPECS: list[tuple[str, list[tuple[str, int]], bool, dict[str, Any] | None]
     ("kyc_documents", [("entity_id", ASCENDING)], False, None),
     ("rm_handoff_activity", [("activity_id", ASCENDING)], True, None),
     ("email_cta_clicks", [("click_id", ASCENDING)], True, None),
+    ("voice_callback_sessions", [("session_id", ASCENDING)], True, None),
+    ("voice_callback_sessions", [("entity_id", ASCENDING)], False, None),
+    ("voice_callback_dedup", [("dedup_key", ASCENDING), ("created_at", ASCENDING)], False, None),
+    ("callback_cta_tokens", [("token", ASCENDING)], True, None),
+    ("callback_cta_tokens", [("expires_at", ASCENDING)], False, None),
     ("channel_messages", [("message_id", ASCENDING)], True, None),
     ("channel_messages", [("entity_id", ASCENDING), ("created_at", ASCENDING)], False, None),
     ("channel_messages", [("thread_id", ASCENDING), ("created_at", ASCENDING)], False, None),

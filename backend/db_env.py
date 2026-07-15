@@ -1,4 +1,4 @@
-"""Load database settings from .env and shared test helpers."""
+"""Load database settings from backend/.env and shared test helpers."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ _ENV_PATH = Path(__file__).resolve().parent / ".env"
 
 
 def load_db_env() -> None:
-    """Load .env from the project root (does not override existing env vars)."""
+    """Load backend/.env (does not override existing env vars)."""
     load_dotenv(_ENV_PATH)
 
 
