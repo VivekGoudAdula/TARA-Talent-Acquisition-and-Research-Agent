@@ -271,5 +271,6 @@ export default function ExplainableAI() {
         )}
       </div>
     </div>
+    </div>
   );
 }
